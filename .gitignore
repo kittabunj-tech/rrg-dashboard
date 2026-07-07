@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+.pytest_cache/
+# local diagnostics (Phase 1); the site only needs data.json
+rrg_tails.csv
+rrg_asset_detail.png
+rrg_big_picture.png
+.claude/
+.DS_Store

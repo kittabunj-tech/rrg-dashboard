@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RRG Asset Rotation Dashboard</title>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<style>
+  :root {
+    --page:       #f9f9f7;
+    --surface:    #fcfcfb;
+    --ink:        #0b0b0b;
+    --ink-2:      #52514e;
+    --muted:      #898781;
+    --grid:       #e1e0d9;
+    --border:     rgba(11,11,11,0.10);
+    --q-leading:   rgba(0,131,0,0.07);
+    --q-weakening: rgba(237,161,0,0.09);
+    --q-lagging:   rgba(227,73,72,0.07);
+    --q-improving: rgba(42,120,214,0.07);
+    --accent:     #2a78d6;
+  }
+  html[data-theme="dark"] {
+    --page:       #0d0d0d;
+    --surface:    #1a1a19;
+    --ink:        #ffffff;
+    --ink-2:      #c3c2b7;
+    --muted:      #898781;
+    --grid:       #2c2c2a;
+    --border:     rgba(255,255,255,0.10);
+    --q-leading:   rgba(0,131,0,0.10);
+    --q-weakening: rgba(201,133,0,0.08);
+    --q-lagging:   rgba(230,103,103,0.07);
+    --q-improving: rgba(57,135,229,0.09);
+    --accent:     #3987e5;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--page); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    line-height: 1.45;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 16px; }
+  header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px; }
+  h1 { font-size: 1.3rem; margin: 0; }
+  .meta { color: var(--ink-2); font-size: 0.85rem; }
+  .theme-btn {
+    margin-left: auto; background: none; border: 1px solid var(--border);
+    color: var(--ink-2); border-radius: 8px; padding: 4px 10px; cursor: pointer;
+    font-size: 0.85rem;
+  }
+  .tabs { display: flex; gap: 8px; margin: 14px 0 10px; }
+  .tab {
+    background: var(--surface); border: 1px solid var(--border); color: var(--ink-2);
+    border-radius: 10px 10px 0 0; padding: 8px 18px; cursor: pointer; font-size: 0.95rem;
+  }
+  .tab.active { color: var(--ink); font-weight: 600; border-bottom: 2px solid var(--accent); }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 12px; margin-bottom: 16px;
+  }
+  #chart { width: 100%; height: 560px; }
+  .controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+              color: var(--ink-2); font-size: 0.85rem; padding: 4px 6px 0; }
+  .controls input[type=range] { accent-color: var(--accent); }
+  h2 { font-size: 1.02rem; margin: 0 0 8px; }
+  .table-scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--grid);
+           white-space: nowrap; }
+  th { color: var(--muted); font-weight: 600; font-size: 0.78rem;
+       text-transform: uppercase; letter-spacing: 0.04em; }
+  td.num { font-variant-numeric: tabular-nums; }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+         margin-right: 7px; vertical-align: baseline; }
+  .q-badge { padding: 2px 9px; border-radius: 999px; font-size: 0.8rem; }
+  .q-Leading   { background: var(--q-leading); }
+  .q-Weakening { background: var(--q-weakening); }
+  .q-Lagging   { background: var(--q-lagging); }
+  .q-Improving { background: var(--q-improving); }
+  ul.reads { margin: 0; padding-left: 20px; }
+  ul.reads li { margin-bottom: 5px; font-size: 0.92rem; }
+  .disclaimer { color: var(--muted); font-size: 0.78rem; margin-top: 10px; }
+  #err { color: #d03b3b; padding: 24px; text-align: center; display: none; }
+  @media (max-width: 640px) {
+    #chart { height: 420px; }
+    .wrap { padding: 10px; }
+    h1 { font-size: 1.1rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>RRG Asset Rotation Dashboard</h1>
+    <span class="meta" id="meta">loading…</span>
+    <button class="theme-btn" id="themeBtn">🌓</button>
+  </header>
+
+  <div id="err">โหลด <code>data.json</code> ไม่ได้ — ถ้าเปิดจากไฟล์โดยตรง ให้รัน
+    <code>python3 -m http.server</code> ในโฟลเดอร์นี้แล้วเปิด <code>http://localhost:8000</code></div>
+
+  <div id="app" style="display:none">
+    <div class="tabs" id="tabs"></div>
+
+    <div class="card">
+      <div id="chart"></div>
+      <div class="controls">
+        <label>ความยาว tail: <b id="tailVal">10</b> สัปดาห์</label>
+        <input type="range" id="tailSlider" min="4" max="12" value="10">
+        <span>· คลิก legend เพื่อเปิด/ปิดรายตัว</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📋 Summary</h2>
+      <div class="table-scroll">
+        <table>
+          <thead><tr>
+            <th>Asset</th><th>Quadrant</th><th>Heading</th>
+            <th>RS-Ratio</th><th>RS-Mom</th><th>Δ 2 สัปดาห์</th><th>Note</th>
+          </tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>💡 Rotation Read (rule-based)</h2>
+      <ul class="reads" id="reads"></ul>
+      <div class="disclaimer" id="disclaimer"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* ---- palette: fixed slot order (validated reference palette); BIL = neutral gray ---- */
+const SLOTS = {
+  light: ["#2a78d6","#1baf7a","#eda100","#008300","#4a3aa7","#e34948","#e87ba4","#eb6834"],
+  dark:  ["#3987e5","#199e70","#c98500","#008300","#9085e9","#e66767","#d55181","#d95926"],
+};
+const NEUTRAL = "#898781";
+
+const QUAD_TH = { Leading: "🟢 Leading", Weakening: "🟡 Weakening",
+                  Lagging: "🔴 Lagging", Improving: "🔵 Improving" };
+const ARROWS = { N:"↑", NE:"↗", E:"→", SE:"↘", S:"↓", SW:"↙", W:"←", NW:"↖", flat:"·" };
+
+let DATA = null;
+let view = "big_picture";
+let tailLen = 10;
+
+const $ = id => document.getElementById(id);
+const cssVar = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+const isDark = () => document.documentElement.dataset.theme === "dark";
+
+/* Color follows the entity: assign slots in the view's fixed symbol order, gray for BIL. */
+function colorMap(symbols) {
+  const slots = SLOTS[isDark() ? "dark" : "light"];
+  const map = {}; let i = 0;
+  for (const s of symbols) map[s] = (s === "BIL") ? NEUTRAL : slots[(i++) % slots.length];
+  return map;
+}
+
+/* ---------------- chart ---------------- */
+function render() {
+  const symbols = DATA.views[view].symbols;
+  const colors = colorMap(symbols);
+  const traces = [], annotations = [];
+
+  // axis range: symmetric around 100, from visible data
+  let ext = 2.5;
+  for (const s of symbols)
+    for (const p of DATA.assets[s].tail.slice(-tailLen))
+      ext = Math.max(ext, Math.abs(p.ratio - 100), Math.abs(p.momentum - 100));
+  const lo = 100 - ext * 1.12, hi = 100 + ext * 1.12;
+
+  for (const sym of symbols) {
+    const a = DATA.assets[sym];
+    const tail = a.tail.slice(-tailLen);
+    const xs = tail.map(p => p.ratio), ys = tail.map(p => p.momentum);
+    const cd = tail.map(p => [a.name, p.quadrant, p.date]);
+    const hover = "<b>%{customdata[0]}</b> (" + sym + ")<br>" +
+      "RS-Ratio: %{x:.2f}<br>RS-Momentum: %{y:.2f}<br>" +
+      "%{customdata[1]} · %{customdata[2]}<extra></extra>";
+    const n = tail.length;
+
+    traces.push({ // tail: line + fading dots
+      x: xs, y: ys, customdata: cd, mode: "lines+markers", type: "scatter",
+      line: { color: colors[sym], width: 1.6 },
+      marker: { color: colors[sym], size: 6,
+                opacity: tail.map((_, j) => 0.2 + 0.6 * j / Math.max(n - 1, 1)) },
+      opacity: 0.75, legendgroup: sym, showlegend: false, hovertemplate: hover,
+    });
+    traces.push({ // head: current position, direct-labeled
+      x: [xs[n-1]], y: [ys[n-1]], customdata: [cd[n-1]],
+      mode: "markers+text", type: "scatter", name: sym,
+      marker: { color: colors[sym], size: 13,
+                line: { color: cssVar("--surface"), width: 2 } },
+      text: [sym], textposition: "top center",
+      textfont: { color: cssVar("--ink"), size: 11.5 },
+      legendgroup: sym, hovertemplate: hover,
+    });
+    if (n >= 2) annotations.push({ // direction arrow
+      x: xs[n-1], y: ys[n-1], ax: xs[n-2], ay: ys[n-2],
+      xref: "x", yref: "y", axref: "x", ayref: "y",
+      showarrow: true, arrowhead: 3, arrowsize: 1.3, arrowwidth: 1.6,
+      arrowcolor: colors[sym], standoff: 8, opacity: 0.9,
+    });
+  }
+
+  const quadLabel = (x, y, text, anchor) => ({
+    x, y, xref: "x", yref: "y", text, showarrow: false,
+    font: { color: cssVar("--muted"), size: 11.5 },
+    xanchor: anchor[0], yanchor: anchor[1],
+  });
+  annotations.push(
+    quadLabel(hi, hi, "Leading 🟢",   ["right", "top"]),
+    quadLabel(lo, hi, "Improving 🔵", ["left",  "top"]),
+    quadLabel(lo, lo, "Lagging 🔴",   ["left",  "bottom"]),
+    quadLabel(hi, lo, "Weakening 🟡", ["right", "bottom"]),
+  );
+
+  const band = (x0, x1, y0, y1, color) => ({
+    type: "rect", x0, x1, y0, y1, xref: "x", yref: "y",
+    fillcolor: color, line: { width: 0 }, layer: "below",
+  });
+  const layout = {
+    paper_bgcolor: cssVar("--surface"), plot_bgcolor: cssVar("--surface"),
+    font: { color: cssVar("--ink-2"),
+            family: 'system-ui, -apple-system, "Segoe UI", sans-serif' },
+    margin: { l: 52, r: 12, t: 12, b: 46 }, autosize: true,
+    xaxis: { title: { text: "JdK RS-Ratio" }, range: [lo, hi], zeroline: false,
+             gridcolor: cssVar("--grid"), linecolor: cssVar("--grid") },
+    yaxis: { title: { text: "JdK RS-Momentum" }, range: [lo, hi], zeroline: false,
+             gridcolor: cssVar("--grid"), linecolor: cssVar("--grid") },
+    shapes: [
+      band(100, hi, 100, hi, cssVar("--q-leading")),
+      band(lo, 100, 100, hi, cssVar("--q-improving")),
+      band(lo, 100, lo, 100, cssVar("--q-lagging")),
+      band(100, hi, lo, 100, cssVar("--q-weakening")),
+      { type: "line", x0: 100, x1: 100, y0: lo, y1: hi,
+        line: { color: cssVar("--muted"), width: 1 } },
+      { type: "line", x0: lo, x1: hi, y0: 100, y1: 100,
+        line: { color: cssVar("--muted"), width: 1 } },
+    ],
+    annotations,
+    legend: { orientation: "h", y: -0.14, font: { color: cssVar("--ink-2") } },
+    hoverlabel: { bgcolor: cssVar("--surface"), font: { color: cssVar("--ink") },
+                  bordercolor: cssVar("--border") },
+    dragmode: false,
+  };
+  Plotly.react("chart", traces, layout,
+               { responsive: true, displayModeBar: false });
+  renderTable(symbols, colors);
+  renderReads(symbols);
+}
+
+/* ---------------- summary table ---------------- */
+function renderTable(symbols, colors) {
+  const rows = symbols.map(sym => {
+    const a = DATA.assets[sym], c = a.current, t = a.tail;
+    const prev2 = t.length >= 3 ? t[t.length - 3] : t[0];
+    const dR = c.ratio - prev2.ratio, dM = c.momentum - prev2.momentum;
+    const fmt = v => (v >= 0 ? "+" : "") + v.toFixed(2);
+    let note = "";
+    if (c.prev_quadrant && c.prev_quadrant !== c.quadrant)
+      note = `${c.prev_quadrant} → ${c.quadrant}`;
+    else if (c.quadrant === "Weakening" && ["N","NE","E"].includes(c.heading))
+      note = "hook? หัวชี้กลับขึ้น";
+    return `<tr>
+      <td><span class="dot" style="background:${colors[sym]}"></span><b>${sym}</b>
+          <span style="color:var(--muted)"> ${a.name}</span></td>
+      <td><span class="q-badge q-${c.quadrant}">${QUAD_TH[c.quadrant]}</span></td>
+      <td>${ARROWS[c.heading] || ""} ${c.heading || ""}</td>
+      <td class="num">${c.ratio.toFixed(2)}</td>
+      <td class="num">${c.momentum.toFixed(2)}</td>
+      <td class="num">${fmt(dR)} / ${fmt(dM)}</td>
+      <td>${note}</td>
+    </tr>`;
+  });
+  $("tbody").innerHTML = rows.join("");
+}
+
+/* ---------------- rule-based rotation read ---------------- */
+function renderReads(symbols) {
+  const reads = [];
+  for (const sym of symbols) {
+    const a = DATA.assets[sym], c = a.current;
+    const label = `<b>${sym}</b> (${a.name})`;
+    if (c.prev_quadrant && c.prev_quadrant !== c.quadrant)
+      reads.push(`${label} เพิ่งข้ามจาก ${c.prev_quadrant} → <b>${c.quadrant}</b>` +
+        (c.quadrant === "Leading" ? " — สัญญาณ rotation เข้า" :
+         c.quadrant === "Lagging" ? " — โมเมนตัมสัมพัทธ์อ่อนลงชัด" : ""));
+    else if (c.quadrant === "Weakening" && ["N","NE"].includes(c.heading))
+      reads.push(`${label} อยู่ Weakening แต่หัวชี้ ${c.heading} — ถ้าไปต่อจะเป็น hook กลับเข้า Leading (สัญญาณแข็งแรง)`);
+    else if (c.quadrant === "Improving" && ["NE","E"].includes(c.heading))
+      reads.push(`${label} อยู่ Improving และกำลังมุ่งหน้าเข้าหา Leading — เฝ้าดู/เริ่มสะสมตามกรอบ RRG`);
+    else if (c.quadrant === "Leading" && ["SE","S","SW"].includes(c.heading))
+      reads.push(`${label} ยังอยู่ Leading แต่โมเมนตัมเริ่มแผ่ว (หัวชี้ ${c.heading})`);
+  }
+  if (!reads.length) reads.push("ไม่มีการข้าม quadrant หรือ pattern เด่นในรอบนี้");
+  $("reads").innerHTML = reads.map(r => `<li>${r}</li>`).join("");
+  $("disclaimer").textContent =
+    "เพื่อการศึกษาเท่านั้น ไม่ใช่คำแนะนำการลงทุน — " + DATA.disclaimer;
+}
+
+/* ---------------- tabs / controls / theme ---------------- */
+function renderTabs() {
+  $("tabs").innerHTML = Object.entries(DATA.views).map(([key, v]) =>
+    `<button class="tab ${key === view ? "active" : ""}" data-view="${key}">${v.label}</button>`
+  ).join("");
+  $("tabs").querySelectorAll(".tab").forEach(btn =>
+    btn.addEventListener("click", () => { view = btn.dataset.view; renderTabs(); render(); }));
+}
+
+$("tailSlider").addEventListener("input", e => {
+  tailLen = +e.target.value; $("tailVal").textContent = tailLen; render();
+});
+
+function setTheme(dark) {
+  document.documentElement.dataset.theme = dark ? "dark" : "light";
+  localStorage.setItem("rrg-theme", dark ? "dark" : "light");
+  if (DATA) render();
+}
+$("themeBtn").addEventListener("click", () => setTheme(!isDark()));
+setTheme((localStorage.getItem("rrg-theme") ||
+  (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")) === "dark");
+
+/* ---------------- boot ---------------- */
+fetch("data.json")
+  .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+  .then(d => {
+    DATA = d;
+    $("meta").textContent =
+      `Last updated: ${d.data_end} (generated ${d.generated_at}) | Benchmark: ${d.benchmark}`;
+    $("app").style.display = "";
+    renderTabs(); render();
+  })
+  .catch(() => { $("err").style.display = "block"; });
+</script>
+</body>
+</html>
