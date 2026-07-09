@@ -108,7 +108,7 @@
       <div class="controls">
         <label>ความยาว tail: <b id="tailVal">10</b> สัปดาห์</label>
         <input type="range" id="tailSlider" min="4" max="12" value="10">
-        <span>· คลิก legend เพื่อเปิด/ปิดรายตัว</span>
+        <span>· คลิก legend เพื่อเปิด/ปิดรายตัว · scroll/pinch = ซูม, ลาก = เลื่อน, double-click = รีเซ็ต</span>
       </div>
     </div>
 
@@ -161,6 +161,47 @@ function colorMap(symbols) {
   const map = {}; let i = 0;
   for (const s of symbols) map[s] = (s === "BIL") ? NEUTRAL : slots[(i++) % slots.length];
   return map;
+}
+
+/* ---------------- zoom / pan state ---------------- */
+/* Saved zoom per view: captured on every user zoom/pan, reapplied when the tab
+   is revisited (uirevision alone can't restore across a view switch, because
+   the revision token changes with the view). */
+const viewRanges = {};
+
+/* Quadrant-name labels live in data coords, so on zoom/pan we re-pin each one
+   to the visible corner of ITS OWN quadrant, and hide it while that quadrant
+   is out of view. (Paper coords were rejected: they'd keep e.g. "Leading" at
+   the top-right of the screen even when the whole viewport shows Lagging.) */
+function updateQuadLabels(gd) {
+  const [x0, x1] = gd.layout.xaxis.range, [y0, y1] = gd.layout.yaxis.range;
+  const corners = [
+    { x: x1, y: y1, vis: x1 > 100 && y1 > 100 },  // Leading   (top-right)
+    { x: x0, y: y1, vis: x0 < 100 && y1 > 100 },  // Improving (top-left)
+    { x: x0, y: y0, vis: x0 < 100 && y0 < 100 },  // Lagging   (bottom-left)
+    { x: x1, y: y0, vis: x1 > 100 && y0 < 100 },  // Weakening (bottom-right)
+  ];
+  const upd = {};
+  corners.forEach((c, i) => {   // quadrant labels are annotations[0..3]
+    upd[`annotations[${i}].x`] = c.x;
+    upd[`annotations[${i}].y`] = c.y;
+    upd[`annotations[${i}].visible`] = c.vis;
+  });
+  Plotly.relayout(gd, upd);
+}
+
+function bindZoomHandlers(gd) {
+  if (gd._zoomBound) return;   // the chart div persists across Plotly.react
+  gd._zoomBound = true;
+  gd.on("plotly_relayout", ev => {
+    // react only to axis-range changes; our own annotation updates don't match,
+    // so this cannot recurse
+    const zoomed = Object.keys(ev).some(k =>
+      k.startsWith("xaxis.range") || k.startsWith("yaxis.range") || k.includes("autorange"));
+    if (!zoomed) return;
+    viewRanges[view] = { x: gd.layout.xaxis.range.slice(), y: gd.layout.yaxis.range.slice() };
+    updateQuadLabels(gd);
+  });
 }
 
 /* ---------------- chart ---------------- */
@@ -227,6 +268,9 @@ function render() {
     type: "rect", x0, x1, y0, y1, xref: "x", yref: "y",
     fillcolor: color, line: { width: 0 }, layer: "below",
   });
+  // Quadrant fills/lines stay in data coords (so they zoom with the data) but
+  // span far beyond any plausible zoom-out, so no bare edge ever shows.
+  const Q0 = 0, Q1 = 200;
   const layout = {
     paper_bgcolor: cssVar("--surface"), plot_bgcolor: cssVar("--surface"),
     font: { color: cssVar("--ink-2"),
@@ -237,23 +281,40 @@ function render() {
     yaxis: { title: { text: "JdK RS-Momentum" }, range: [lo, hi], zeroline: false,
              gridcolor: cssVar("--grid"), linecolor: cssVar("--grid") },
     shapes: [
-      band(100, hi, 100, hi, cssVar("--q-leading")),
-      band(lo, 100, 100, hi, cssVar("--q-improving")),
-      band(lo, 100, lo, 100, cssVar("--q-lagging")),
-      band(100, hi, lo, 100, cssVar("--q-weakening")),
-      { type: "line", x0: 100, x1: 100, y0: lo, y1: hi,
+      band(100, Q1, 100, Q1, cssVar("--q-leading")),
+      band(Q0, 100, 100, Q1, cssVar("--q-improving")),
+      band(Q0, 100, Q0, 100, cssVar("--q-lagging")),
+      band(100, Q1, Q0, 100, cssVar("--q-weakening")),
+      { type: "line", x0: 100, x1: 100, y0: Q0, y1: Q1, xref: "x", yref: "y",
         line: { color: cssVar("--muted"), width: 1 } },
-      { type: "line", x0: lo, x1: hi, y0: 100, y1: 100,
+      { type: "line", x0: Q0, x1: Q1, y0: 100, y1: 100, xref: "x", yref: "y",
         line: { color: cssVar("--muted"), width: 1 } },
     ],
     annotations,
     legend: { orientation: "h", y: -0.14, font: { color: cssVar("--ink-2") } },
     hoverlabel: { bgcolor: cssVar("--surface"), font: { color: cssVar("--ink") },
                   bordercolor: cssVar("--border") },
-    dragmode: false,
+    dragmode: "pan",
+    // keep user zoom + hidden-legend state across re-renders within the same
+    // view (theme toggle, tail slider); a view switch resets to that view's UI
+    uirevision: view,
+    modebar: { bgcolor: "transparent", color: cssVar("--muted"),
+               activecolor: cssVar("--accent") },
   };
-  Plotly.react("chart", traces, layout,
-               { responsive: true, displayModeBar: false });
+  Plotly.react("chart", traces, layout, {
+    responsive: true,
+    scrollZoom: true,            // wheel zoom + mobile pinch, only over the plot
+    doubleClick: "reset",        // double-click plot area → back to default view
+    displayModeBar: true,        // always visible (incl. mobile), not hover-only
+    displaylogo: false,
+    modeBarButtonsToRemove: ["select2d", "lasso2d", "autoScale2d"],
+  }).then(gd => {
+    bindZoomHandlers(gd);
+    // returning to a tab: restore its saved zoom (react above drew defaults,
+    // so double-click reset still returns to the default view, not the zoom)
+    const saved = viewRanges[view];
+    if (saved) Plotly.relayout(gd, { "xaxis.range": saved.x, "yaxis.range": saved.y });
+  });
   renderTable(symbols, colors);
   renderReads(symbols);
 }
