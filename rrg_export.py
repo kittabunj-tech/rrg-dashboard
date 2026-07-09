@@ -27,6 +27,8 @@ ASSET_NAMES = {
     "VT": "Global Equities", "AGG": "US Aggregate Bonds",
     "DBC": "Commodities", "BIL": "Cash (1-3M T-Bill)",
     "AOR": "60/40 Benchmark",
+    "MCHI": "China", "INDA": "India", "EWJ": "Japan", "EWY": "South Korea",
+    "EIDO": "Indonesia", "EWT": "Taiwan", "EWH": "Hong Kong", "VGK": "Europe",
 }
 
 _HEADINGS = ["E", "NE", "N", "NW", "W", "SW", "S", "SE"]
@@ -71,8 +73,12 @@ def build_payload(tails: pd.DataFrame, data_start, data_end) -> dict:
         "data_start": pd.Timestamp(data_start).strftime("%Y-%m-%d"),
         "data_end": pd.Timestamp(data_end).strftime("%Y-%m-%d"),
         "views": {
-            "big_picture": {"label": "Big Picture", "symbols": BIG_PICTURE},
-            "asset_detail": {"label": "Asset Detail", "symbols": ASSET_DETAIL},
+            # only symbols that actually computed (a ticker skipped for short
+            # history must not appear in a view the frontend will render)
+            "big_picture": {"label": "Big Picture",
+                            "symbols": [s for s in BIG_PICTURE if s in assets]},
+            "asset_detail": {"label": "Asset Detail",
+                             "symbols": [s for s in ASSET_DETAIL if s in assets]},
         },
         "assets": assets,
         "disclaimer": (

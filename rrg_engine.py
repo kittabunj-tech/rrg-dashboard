@@ -21,25 +21,39 @@ benchmark AOR) and tune W1 (10-14) / W2 if rotation direction disagrees.
 
 from __future__ import annotations
 
+import logging
 from typing import Iterable, Optional
 
 import numpy as np
 import pandas as pd
 
-TICKERS = [
-    "SPY", "QQQ", "GLD", "SLV", "TLT", "IEF",
-    "BTC-USD", "ETH-USD", "VT", "AGG", "DBC", "BIL", "AOR",
-]
-CRYPTO_TICKERS = {"BTC-USD", "ETH-USD"}
+logger = logging.getLogger(__name__)
+
 BENCHMARK = "AOR"
+
+# ---------------------------------------------------------------------------
+# Universe config — single source of truth for adding/removing tickers.
+# A symbol may appear in several views; the benchmark is added automatically.
+# ---------------------------------------------------------------------------
+UNIVERSE = {
+    "big_picture": ["VT", "AGG", "DBC", "BIL"],
+    "asset_detail": [
+        "SPY", "QQQ", "GLD", "SLV", "TLT", "IEF", "BTC-USD", "ETH-USD", "BIL",
+        # country/region ETFs
+        "MCHI", "INDA", "EWJ", "EWY", "EIDO", "EWT", "EWH", "VGK",
+    ],
+}
+
+BIG_PICTURE = UNIVERSE["big_picture"]
+ASSET_DETAIL = UNIVERSE["asset_detail"]
+# ordered union of every view plus the benchmark
+TICKERS = list(dict.fromkeys([*BIG_PICTURE, *ASSET_DETAIL, BENCHMARK]))
+CRYPTO_TICKERS = {"BTC-USD", "ETH-USD"}
 
 # Default tuning per roadmap §4 (W1 adjustable 10-14).
 W1 = 14   # rolling window (weeks) for z-score normalization
 W2 = 4    # look-back (weeks) for RS-Ratio rate of change
 TAIL_LENGTH = 10
-
-BIG_PICTURE = ["VT", "AGG", "DBC", "BIL"]
-ASSET_DETAIL = ["SPY", "QQQ", "GLD", "SLV", "TLT", "IEF", "BTC-USD", "ETH-USD", "BIL"]
 
 
 # ---------------------------------------------------------------------------
@@ -86,12 +100,24 @@ def fetch_weekly_closes(
         weekly = weekly.iloc[:-1]
 
     # Drop leading rows where the benchmark has no data yet.
+    if weekly[BENCHMARK].isna().all():
+        raise ValueError(f"No data returned for benchmark {BENCHMARK}")
     weekly = weekly.loc[weekly[BENCHMARK].first_valid_index():]
 
-    missing = [t for t in tickers if weekly[t].isna().all()]
-    if missing:
-        raise ValueError(f"No data returned for: {missing}")
-    return weekly
+    # A ticker with missing or short history (bad symbol, new listing) is
+    # skipped with a warning instead of failing the whole pipeline.
+    grace = weekly.index[min(4, len(weekly) - 1)]   # allow ≤4 weeks' slack
+    drop = []
+    for t in tickers:
+        first = weekly[t].first_valid_index()
+        if first is None:
+            logger.warning("%s: no data returned from yfinance — skipped", t)
+            drop.append(t)
+        elif first > grace:
+            logger.warning("%s: history starts %s, shorter than %dy — skipped",
+                           t, first.date(), years)
+            drop.append(t)
+    return weekly.drop(columns=drop)
 
 
 # ---------------------------------------------------------------------------
@@ -247,9 +273,11 @@ def plot_rrg(
 # ---------------------------------------------------------------------------
 
 def main():
+    logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(message)s")
     print(f"Fetching 3y weekly closes for {len(TICKERS)} tickers...")
     prices = fetch_weekly_closes()
-    print(f"  {len(prices)} weeks, {prices.index[0].date()} → {prices.index[-1].date()}")
+    print(f"  {len(prices)} weeks, {prices.index[0].date()} → {prices.index[-1].date()}, "
+          f"{len(prices.columns)}/{len(TICKERS)} tickers usable")
 
     rrg = compute_rrg(prices)
     tails = get_tails(rrg)

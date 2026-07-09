@@ -143,6 +143,18 @@ const SLOTS = {
 };
 const NEUTRAL = "#898781";
 
+/* Country ETFs get fixed colors OUTSIDE the slot cycle, so the original assets
+   keep their slots untouched. Asia = a cool cyan/teal/slate family stepped in
+   hue+lightness; VGK (Europe) = a warm brown far from both groups. With 17
+   series some neighbours are close — the direct symbol labels on each head and
+   the summary table are the disambiguators. */
+const COUNTRY_COLORS = {
+  light: { MCHI:"#0e7490", INDA:"#0d9488", EWJ:"#64748b", EWY:"#38bdf8",
+           EIDO:"#173f5f", EWT:"#06b6d4", EWH:"#457b9d", VGK:"#795548" },
+  dark:  { MCHI:"#26c6da", INDA:"#2dd4bf", EWJ:"#94a3b8", EWY:"#7dd3fc",
+           EIDO:"#4a7fa5", EWT:"#22d3ee", EWH:"#6b9dc2", VGK:"#a1887f" },
+};
+
 const QUAD_TH = { Leading: "🟢 Leading", Weakening: "🟡 Weakening",
                   Lagging: "🔴 Lagging", Improving: "🔵 Improving" };
 const ARROWS = { N:"↑", NE:"↗", E:"→", SE:"↘", S:"↓", SW:"↙", W:"←", NW:"↖", flat:"·" };
@@ -155,11 +167,15 @@ const $ = id => document.getElementById(id);
 const cssVar = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 const isDark = () => document.documentElement.dataset.theme === "dark";
 
-/* Color follows the entity: assign slots in the view's fixed symbol order, gray for BIL. */
+/* Color follows the entity: assign slots in the view's fixed symbol order,
+   gray for BIL, fixed country colors outside the slot cycle (so adding
+   country ETFs never shifts an existing asset's color). */
 function colorMap(symbols) {
-  const slots = SLOTS[isDark() ? "dark" : "light"];
+  const mode = isDark() ? "dark" : "light";
+  const slots = SLOTS[mode], country = COUNTRY_COLORS[mode];
   const map = {}; let i = 0;
-  for (const s of symbols) map[s] = (s === "BIL") ? NEUTRAL : slots[(i++) % slots.length];
+  for (const s of symbols)
+    map[s] = (s === "BIL") ? NEUTRAL : (country[s] ?? slots[(i++) % slots.length]);
   return map;
 }
 
@@ -271,11 +287,24 @@ function render() {
   // Quadrant fills/lines stay in data coords (so they zoom with the data) but
   // span far beyond any plausible zoom-out, so no bare edge ever shows.
   const Q0 = 0, Q1 = 200;
+  // Legend wraps to multiple rows with many assets: reserve bottom margin for
+  // the estimated row count so rows never spill past the chart's fixed height.
+  const perRow = Math.max(3, Math.floor(($("chart").clientWidth || 900) / 92));
+  const legendRows = Math.ceil(symbols.length / perRow);
+  // Many assets → the legend wraps; grow the chart div by the extra rows so
+  // the plot keeps its size and the legend never spills past the card.
+  const rowH = 26, gap = 68;                 // gap = x-ticks + axis title
+  const marginB = gap + legendRows * rowH;
+  const baseH = window.innerWidth <= 640 ? 420 : 560;
+  const chartH = baseH + Math.max(0, legendRows - 2) * rowH + 16;
+  $("chart").style.height = chartH + "px";
+  const plotH = Math.max(180, chartH - 12 - marginB);
+  const legendY = -(gap / plotH);            // first row clears the axis title
   const layout = {
     paper_bgcolor: cssVar("--surface"), plot_bgcolor: cssVar("--surface"),
     font: { color: cssVar("--ink-2"),
             family: 'system-ui, -apple-system, "Segoe UI", sans-serif' },
-    margin: { l: 52, r: 12, t: 12, b: 46 }, autosize: true,
+    margin: { l: 52, r: 12, t: 12, b: marginB }, autosize: true,
     xaxis: { title: { text: "JdK RS-Ratio" }, range: [lo, hi], zeroline: false,
              gridcolor: cssVar("--grid"), linecolor: cssVar("--grid") },
     yaxis: { title: { text: "JdK RS-Momentum" }, range: [lo, hi], zeroline: false,
@@ -291,7 +320,8 @@ function render() {
         line: { color: cssVar("--muted"), width: 1 } },
     ],
     annotations,
-    legend: { orientation: "h", y: -0.14, font: { color: cssVar("--ink-2") } },
+    legend: { orientation: "h", y: legendY, yanchor: "top",
+              font: { color: cssVar("--ink-2"), size: 11.5 } },
     hoverlabel: { bgcolor: cssVar("--surface"), font: { color: cssVar("--ink") },
                   bordercolor: cssVar("--border") },
     dragmode: "pan",
