@@ -163,34 +163,11 @@ function colorMap(symbols) {
   return map;
 }
 
-/* Direction arrows are layout annotations (not traces), so a legend toggle does
-   not hide them on its own. currentArrowMap links each arrow annotation to its
-   asset's head-trace index; syncArrows() mirrors the trace's visible state onto
-   the annotation after every legend click / double-click (plotly_restyle). */
-let currentArrowMap = [];
-
-function syncArrows(gd) {
-  gd = gd || $("chart");
-  if (!gd || !gd.data) return;
-  const upd = {};
-  for (const { annoIdx, headIdx } of currentArrowMap) {
-    const t = gd.data[headIdx];
-    upd[`annotations[${annoIdx}].visible`] = !(t && t.visible === "legendonly");
-  }
-  if (Object.keys(upd).length) Plotly.relayout(gd, upd);
-}
-
-function bindArrowSync(gd) {
-  if (gd._arrowSyncBound) return;          // attach once; survives Plotly.react
-  gd._arrowSyncBound = true;
-  gd.on("plotly_restyle", () => syncArrows(gd));
-}
-
 /* ---------------- chart ---------------- */
 function render() {
   const symbols = DATA.views[view].symbols;
   const colors = colorMap(symbols);
-  const traces = [], annotations = [], arrowMap = [];
+  const traces = [], annotations = [];
 
   // axis range: symmetric around 100, from visible data
   let ext = 2.5;
@@ -216,8 +193,14 @@ function render() {
                 opacity: tail.map((_, j) => 0.2 + 0.6 * j / Math.max(n - 1, 1)) },
       opacity: 0.75, legendgroup: sym, showlegend: false, hovertemplate: hover,
     });
-    const headIdx = traces.length; // legend proxy for the whole group
-    traces.push({ // head: current position, direct-labeled
+    if (n >= 2) traces.push({ // direction arrow as a grouped trace → toggles natively
+      x: [xs[n-2], xs[n-1]], y: [ys[n-2], ys[n-1]],
+      mode: "markers", type: "scatter",
+      marker: { color: colors[sym], size: [0, 15], symbol: "arrow",
+                angleref: "previous", standoff: 8 },
+      legendgroup: sym, showlegend: false, hoverinfo: "skip",
+    });
+    traces.push({ // head: current position, direct-labeled + legend proxy
       x: [xs[n-1]], y: [ys[n-1]], customdata: [cd[n-1]],
       mode: "markers+text", type: "scatter", name: sym,
       marker: { color: colors[sym], size: 13,
@@ -226,15 +209,6 @@ function render() {
       textfont: { color: cssVar("--ink"), size: 11.5 },
       legendgroup: sym, showlegend: true, hovertemplate: hover,
     });
-    if (n >= 2) { // direction arrow (annotation → visibility synced to head trace)
-      arrowMap.push({ annoIdx: annotations.length, headIdx });
-      annotations.push({
-        x: xs[n-1], y: ys[n-1], ax: xs[n-2], ay: ys[n-2],
-        xref: "x", yref: "y", axref: "x", ayref: "y",
-        showarrow: true, arrowhead: 3, arrowsize: 1.3, arrowwidth: 1.6,
-        arrowcolor: colors[sym], standoff: 8, opacity: 0.9,
-      });
-    }
   }
 
   const quadLabel = (x, y, text, anchor) => ({
@@ -278,10 +252,8 @@ function render() {
                   bordercolor: cssVar("--border") },
     dragmode: false,
   };
-  currentArrowMap = arrowMap;
   Plotly.react("chart", traces, layout,
-               { responsive: true, displayModeBar: false })
-    .then(bindArrowSync);
+               { responsive: true, displayModeBar: false });
   renderTable(symbols, colors);
   renderReads(symbols);
 }
