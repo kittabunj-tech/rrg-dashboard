@@ -3,98 +3,175 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>RRG Asset Rotation Dashboard</title>
+<title>RRG Terminal · Asset Rotation Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
 <style>
+  /* ---- RRG Terminal: dark-only, Bloomberg-inspired ---- */
   :root {
-    --page:       #f9f9f7;
-    --surface:    #fcfcfb;
-    --ink:        #0b0b0b;
-    --ink-2:      #52514e;
-    --muted:      #898781;
-    --grid:       #e1e0d9;
-    --border:     rgba(11,11,11,0.10);
+    --page:       #000000;
+    --surface:    #0a0a0a;   /* panels / chart background */
+    --surface-2:  #0f0f0e;   /* zebra rows, chips */
+    --ink:        #e8e6e1;
+    --ink-2:      #9a978f;
+    --muted:      #8a8880;   /* ≥4.5:1 on --surface (AA for small text) */
+    --grid:       #1c1c1c;
+    --border:     #1f1f1f;
+    --amber:      #ffa028;   /* all data numerals */
+    --green:      #26a626;
+    --red:        #e05252;
     --q-leading:   rgba(0,131,0,0.07);
-    --q-weakening: rgba(237,161,0,0.09);
-    --q-lagging:   rgba(227,73,72,0.07);
-    --q-improving: rgba(42,120,214,0.07);
-    --accent:     #2a78d6;
-  }
-  html[data-theme="dark"] {
-    --page:       #0d0d0d;
-    --surface:    #1a1a19;
-    --ink:        #ffffff;
-    --ink-2:      #c3c2b7;
-    --muted:      #898781;
-    --grid:       #2c2c2a;
-    --border:     rgba(255,255,255,0.10);
-    --q-leading:   rgba(0,131,0,0.10);
-    --q-weakening: rgba(201,133,0,0.08);
-    --q-lagging:   rgba(230,103,103,0.07);
-    --q-improving: rgba(57,135,229,0.09);
-    --accent:     #3987e5;
+    --q-weakening: rgba(237,161,0,0.06);
+    --q-lagging:   rgba(227,73,72,0.06);
+    --q-improving: rgba(57,135,229,0.08);
+    --q-leading-s:   #26a626;   /* solid quadrant accents (table bars) */
+    --q-weakening-s: #d9a62e;
+    --q-lagging-s:   #e05252;
+    --q-improving-s: #3987e5;
+    --accent:     #ffa028;
+    --sans: "IBM Plex Sans Thai", system-ui, -apple-system, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   }
   * { box-sizing: border-box; }
   body {
     margin: 0; background: var(--page); color: var(--ink);
-    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-    line-height: 1.45;
+    font-family: var(--sans); line-height: 1.5;
   }
-  .wrap { max-width: 980px; margin: 0 auto; padding: 16px; }
-  header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px; }
-  h1 { font-size: 1.3rem; margin: 0; }
-  .meta { color: var(--ink-2); font-size: 0.85rem; }
-  .theme-btn {
-    margin-left: auto; background: none; border: 1px solid var(--border);
-    color: var(--ink-2); border-radius: 8px; padding: 4px 10px; cursor: pointer;
-    font-size: 0.85rem;
+  .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .wrap { max-width: 1020px; margin: 0 auto; padding: 0 16px 24px; }
+
+  /* ---- header bar ---- */
+  header {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px;
+    padding: 14px 0 12px; border-bottom: 1px solid var(--border);
+    margin-bottom: 14px;
   }
-  .tabs { display: flex; gap: 8px; margin: 14px 0 10px; }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-tick { width: 4px; height: 22px; background: var(--amber); }
+  h1 { font-size: 1.05rem; font-weight: 700; letter-spacing: 0.06em;
+       text-transform: uppercase; margin: 0; }
+  .brand .sub { color: var(--muted); font-size: 0.8rem; }
+  .header-meta {
+    margin-left: auto; display: flex; flex-wrap: wrap; align-items: center;
+    gap: 6px 14px; font-size: 0.8rem;
+  }
+  .chip { color: var(--ink-2); }
+  .chip b { color: var(--ink); font-family: var(--mono); font-weight: 600; }
+  .stamp { color: var(--ink-2); }
+  .stamp b { color: var(--amber); font-weight: 400; }
+  .badge {
+    font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.05em;
+    padding: 3px 10px; border: 1px solid var(--border); border-radius: 3px;
+  }
+  .badge.ok    { color: var(--green); border-color: rgba(38,166,38,0.4); }
+  .badge.stale { color: var(--amber); border-color: rgba(255,160,40,0.4); }
+
+  /* ---- tabs ---- */
+  .tabs { display: flex; gap: 2px; margin: 0 0 12px; }
   .tab {
-    background: var(--surface); border: 1px solid var(--border); color: var(--ink-2);
-    border-radius: 10px 10px 0 0; padding: 8px 18px; cursor: pointer; font-size: 0.95rem;
+    background: none; border: 1px solid var(--border); border-bottom: none;
+    color: var(--ink-2); padding: 0 22px; min-height: 44px; cursor: pointer;
+    font-family: var(--mono); font-size: 0.8rem; letter-spacing: 0.08em;
+    text-transform: uppercase; border-radius: 4px 4px 0 0;
   }
-  .tab.active { color: var(--ink); font-weight: 600; border-bottom: 2px solid var(--accent); }
+  .tab:hover { color: var(--ink); background: var(--surface); }
+  .tab.active {
+    color: var(--amber); background: var(--surface);
+    box-shadow: inset 0 2px 0 var(--amber); font-weight: 600;
+  }
+
+  /* ---- cards ---- */
   .card {
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; padding: 12px; margin-bottom: 16px;
+    border-radius: 6px; padding: 12px; margin-bottom: 14px;
+    box-shadow: 0 1px 8px rgba(0,0,0,0.5);
   }
+  h2 {
+    font-family: var(--mono); font-size: 0.74rem; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+    margin: 0 0 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+  }
+  h2::before { content: "▮ "; color: var(--amber); }
+
   #chart { width: 100%; height: 560px; }
   .controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-              color: var(--ink-2); font-size: 0.85rem; padding: 4px 6px 0; }
-  .controls input[type=range] { accent-color: var(--accent); }
-  h2 { font-size: 1.02rem; margin: 0 0 8px; }
-  .table-scroll { overflow-x: auto; }
-  table { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
-  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--grid);
-           white-space: nowrap; }
-  th { color: var(--muted); font-weight: 600; font-size: 0.78rem;
-       text-transform: uppercase; letter-spacing: 0.04em; }
-  td.num { font-variant-numeric: tabular-nums; }
-  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%;
-         margin-right: 7px; vertical-align: baseline; }
-  .q-badge { padding: 2px 9px; border-radius: 999px; font-size: 0.8rem; }
-  .q-Leading   { background: var(--q-leading); }
-  .q-Weakening { background: var(--q-weakening); }
-  .q-Lagging   { background: var(--q-lagging); }
-  .q-Improving { background: var(--q-improving); }
+              color: var(--muted); font-size: 0.8rem; padding: 8px 6px 0;
+              border-top: 1px solid var(--border); margin-top: 4px; }
+  .controls label { color: var(--ink-2); }
+  .controls b { color: var(--amber); font-family: var(--mono); }
+  .controls input[type=range] { accent-color: var(--amber); min-height: 32px; }
+
+  /* ---- summary table ---- */
+  .table-scroll { overflow: auto; max-height: 70vh; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.86rem; }
+  thead th {
+    position: sticky; top: 0; background: var(--surface); z-index: 1;
+    color: var(--muted); font-family: var(--mono); font-weight: 600;
+    font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em;
+    text-align: left; padding: 7px 12px; border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  thead th.num { text-align: right; }
+  tbody td { padding: 8px 12px; white-space: nowrap;
+             border-bottom: 1px solid var(--grid); }
+  tbody tr:nth-child(even) { background: var(--surface-2); }
+  tbody tr:hover { background: #161513; }
+  td.asset-cell { border-left: 3px solid transparent; }
+  tr.q-Leading   td.asset-cell { border-left-color: var(--q-leading-s); }
+  tr.q-Weakening td.asset-cell { border-left-color: var(--q-weakening-s); }
+  tr.q-Lagging   td.asset-cell { border-left-color: var(--q-lagging-s); }
+  tr.q-Improving td.asset-cell { border-left-color: var(--q-improving-s); }
+  .sym { font-family: var(--mono); font-weight: 600; }
+  .asset-name { color: var(--muted); font-size: 0.8rem; }
+  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%;
+         margin-right: 8px; }
+  .quad-label { font-family: var(--mono); font-size: 0.74rem; letter-spacing: 0.06em; }
+  .quad-label.q-Leading   { color: var(--q-leading-s); }
+  .quad-label.q-Weakening { color: var(--q-weakening-s); }
+  .quad-label.q-Lagging   { color: var(--q-lagging-s); }
+  .quad-label.q-Improving { color: var(--q-improving-s); }
+  td.num { text-align: right; font-family: var(--mono);
+           font-variant-numeric: tabular-nums; color: var(--amber); }
+  .hd { font-family: var(--mono); }
+  .hd.up   { color: var(--green); }
+  .hd.down { color: var(--red); }
+  .hd.flat { color: var(--muted); }
+  td.note { color: var(--ink-2); font-size: 0.8rem; }
+
+  /* ---- rotation read ---- */
   ul.reads { margin: 0; padding-left: 20px; }
-  ul.reads li { margin-bottom: 5px; font-size: 0.92rem; }
-  .disclaimer { color: var(--muted); font-size: 0.78rem; margin-top: 10px; }
-  #err { color: #d03b3b; padding: 24px; text-align: center; display: none; }
+  ul.reads li { margin-bottom: 6px; font-size: 0.9rem; color: var(--ink-2); }
+  ul.reads li b { color: var(--ink); font-family: var(--mono); }
+  .disclaimer { color: var(--muted); font-size: 0.75rem; margin-top: 12px;
+                border-top: 1px solid var(--border); padding-top: 8px; }
+  #err { color: var(--red); padding: 24px; text-align: center; display: none; }
+  #err code { font-family: var(--mono); color: var(--amber); }
+
   @media (max-width: 640px) {
     #chart { height: 420px; }
-    .wrap { padding: 10px; }
-    h1 { font-size: 1.1rem; }
+    .wrap { padding: 0 8px 16px; }
+    header { padding: 10px 0; }
+    .header-meta { margin-left: 0; width: 100%; }
+    .tab { flex: 1; padding: 0 8px; }
   }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <h1>RRG Asset Rotation Dashboard</h1>
-    <span class="meta" id="meta">loading…</span>
-    <button class="theme-btn" id="themeBtn">🌓</button>
+    <div class="brand">
+      <span class="brand-tick"></span>
+      <h1>RRG Terminal</h1>
+      <span class="sub">Asset Rotation Dashboard</span>
+    </div>
+    <div class="header-meta">
+      <span class="chip">BENCHMARK <b id="benchLabel">—</b></span>
+      <span class="stamp mono" id="stampBP">BP —</span>
+      <span class="stamp mono" id="stampAD">AD —</span>
+      <span class="badge" id="statusBadge">● LOADING</span>
+    </div>
   </header>
 
   <div id="err">โหลด <code>data_bigpicture.json</code> / <code>data_assetdetail.json</code> ไม่ได้ — ถ้าเปิดจากไฟล์โดยตรง ให้รัน
@@ -106,19 +183,20 @@
     <div class="card">
       <div id="chart"></div>
       <div class="controls">
-        <label>ความยาว tail: <b id="tailVal">10</b> สัปดาห์</label>
+        <label>TAIL <b id="tailVal">10</b>W</label>
         <input type="range" id="tailSlider" min="4" max="12" value="10">
         <span>· คลิก legend เพื่อเปิด/ปิดรายตัว · scroll/pinch = ซูม, ลาก = เลื่อน, double-click = รีเซ็ต</span>
       </div>
     </div>
 
     <div class="card">
-      <h2>📋 Summary</h2>
+      <h2>Summary</h2>
       <div class="table-scroll">
         <table>
           <thead><tr>
             <th>Asset</th><th>Quadrant</th><th>Heading</th>
-            <th>RS-Ratio</th><th>RS-Mom</th><th>Δ 2 สัปดาห์</th><th>Note</th>
+            <th class="num">RS-Ratio</th><th class="num">RS-Mom</th>
+            <th class="num">Δ 2W</th><th>Note</th>
           </tr></thead>
           <tbody id="tbody"></tbody>
         </table>
@@ -126,7 +204,7 @@
     </div>
 
     <div class="card">
-      <h2>💡 Rotation Read (rule-based)</h2>
+      <h2>Rotation Read</h2>
       <ul class="reads" id="reads"></ul>
       <div class="disclaimer" id="disclaimer"></div>
     </div>
@@ -136,28 +214,18 @@
 <script>
 "use strict";
 
-/* ---- palette: fixed slot order (validated reference palette); BIL = neutral gray ---- */
-const SLOTS = {
-  light: ["#2a78d6","#1baf7a","#eda100","#008300","#4a3aa7","#e34948","#e87ba4","#eb6834"],
-  dark:  ["#3987e5","#199e70","#c98500","#008300","#9085e9","#e66767","#d55181","#d95926"],
-};
+/* ---- asset colors: unchanged from the previous dark palette (users know
+   them); BIL = neutral gray, country ETFs fixed outside the slot cycle ---- */
+const SLOTS = ["#3987e5","#199e70","#c98500","#008300","#9085e9","#e66767","#d55181","#d95926"];
 const NEUTRAL = "#898781";
+const COUNTRY_COLORS = { MCHI:"#26c6da", INDA:"#2dd4bf", EWJ:"#94a3b8", EWY:"#7dd3fc",
+                         EIDO:"#4a7fa5", EWT:"#22d3ee", EWH:"#6b9dc2", VGK:"#a1887f" };
 
-/* Country ETFs get fixed colors OUTSIDE the slot cycle, so the original assets
-   keep their slots untouched. Asia = a cool cyan/teal/slate family stepped in
-   hue+lightness; VGK (Europe) = a warm brown far from both groups. With 17
-   series some neighbours are close — the direct symbol labels on each head and
-   the summary table are the disambiguators. */
-const COUNTRY_COLORS = {
-  light: { MCHI:"#0e7490", INDA:"#0d9488", EWJ:"#64748b", EWY:"#38bdf8",
-           EIDO:"#173f5f", EWT:"#06b6d4", EWH:"#457b9d", VGK:"#795548" },
-  dark:  { MCHI:"#26c6da", INDA:"#2dd4bf", EWJ:"#94a3b8", EWY:"#7dd3fc",
-           EIDO:"#4a7fa5", EWT:"#22d3ee", EWH:"#6b9dc2", VGK:"#a1887f" },
-};
-
-const QUAD_TH = { Leading: "🟢 Leading", Weakening: "🟡 Weakening",
-                  Lagging: "🔴 Lagging", Improving: "🔵 Improving" };
 const ARROWS = { N:"↑", NE:"↗", E:"→", SE:"↘", S:"↓", SW:"↙", W:"←", NW:"↖", flat:"·" };
+/* table heading glyph: momentum direction of the last move */
+const HEAD_GLYPH = h =>
+  ["N","NE","NW"].includes(h) ? ["▲", "up"] :
+  ["S","SE","SW"].includes(h) ? ["▼", "down"] : ["▶", "flat"];
 
 /* DATA maps view key → its own payload file (the two views update on
    different schedules: Big Picture weekly, Asset Detail daily). */
@@ -168,17 +236,14 @@ let tailLen = 10;
 const $ = id => document.getElementById(id);
 const cur = () => DATA[view];   // payload of the active view
 const cssVar = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-const isDark = () => document.documentElement.dataset.theme === "dark";
 
 /* Color follows the entity: assign slots in the view's fixed symbol order,
    gray for BIL, fixed country colors outside the slot cycle (so adding
    country ETFs never shifts an existing asset's color). */
 function colorMap(symbols) {
-  const mode = isDark() ? "dark" : "light";
-  const slots = SLOTS[mode], country = COUNTRY_COLORS[mode];
   const map = {}; let i = 0;
   for (const s of symbols)
-    map[s] = (s === "BIL") ? NEUTRAL : (country[s] ?? slots[(i++) % slots.length]);
+    map[s] = (s === "BIL") ? NEUTRAL : (COUNTRY_COLORS[s] ?? SLOTS[(i++) % SLOTS.length]);
   return map;
 }
 
@@ -266,7 +331,8 @@ function render() {
       marker: { color: colors[sym], size: 13,
                 line: { color: cssVar("--surface"), width: 2 } },
       text: [sym], textposition: "top center",
-      textfont: { color: cssVar("--ink"), size: 11.5 },
+      textfont: { color: cssVar("--ink"), size: 11.5,
+                  family: cssVar("--mono") || "IBM Plex Mono, monospace" },
       legendgroup: sym, showlegend: true, hovertemplate: hover,
     });
   }
@@ -306,12 +372,14 @@ function render() {
   const layout = {
     paper_bgcolor: cssVar("--surface"), plot_bgcolor: cssVar("--surface"),
     font: { color: cssVar("--ink-2"),
-            family: 'system-ui, -apple-system, "Segoe UI", sans-serif' },
+            family: '"IBM Plex Sans Thai", system-ui, sans-serif' },
     margin: { l: 52, r: 12, t: 12, b: marginB }, autosize: true,
     xaxis: { title: { text: "JdK RS-Ratio" }, range: [lo, hi], zeroline: false,
-             gridcolor: cssVar("--grid"), linecolor: cssVar("--grid") },
+             gridcolor: cssVar("--grid"), linecolor: cssVar("--grid"),
+             tickfont: { family: '"IBM Plex Mono", monospace', size: 11 } },
     yaxis: { title: { text: "JdK RS-Momentum" }, range: [lo, hi], zeroline: false,
-             gridcolor: cssVar("--grid"), linecolor: cssVar("--grid") },
+             gridcolor: cssVar("--grid"), linecolor: cssVar("--grid"),
+             tickfont: { family: '"IBM Plex Mono", monospace', size: 11 } },
     shapes: [
       band(100, Q1, 100, Q1, cssVar("--q-leading")),
       band(Q0, 100, 100, Q1, cssVar("--q-improving")),
@@ -324,15 +392,16 @@ function render() {
     ],
     annotations,
     legend: { orientation: "h", y: legendY, yanchor: "top",
-              font: { color: cssVar("--ink-2"), size: 11.5 } },
-    hoverlabel: { bgcolor: cssVar("--surface"), font: { color: cssVar("--ink") },
+              font: { color: cssVar("--ink-2"), size: 13,
+                      family: '"IBM Plex Mono", monospace' } },
+    hoverlabel: { bgcolor: "#141412", font: { color: cssVar("--ink") },
                   bordercolor: cssVar("--border") },
     dragmode: "pan",
     // keep user zoom + hidden-legend state across re-renders within the same
     // view (theme toggle, tail slider); a view switch resets to that view's UI
     uirevision: view,
     modebar: { bgcolor: "transparent", color: cssVar("--muted"),
-               activecolor: cssVar("--accent") },
+               activecolor: cssVar("--amber") },
   };
   Plotly.react("chart", traces, layout, {
     responsive: true,
@@ -353,11 +422,18 @@ function render() {
   renderReads(symbols);
 }
 
-/* per-view "last updated": each view's payload carries its own timestamps */
+/* header bar: both views' timestamps always visible + freshness badge.
+   BP is weekly (fresh ≤ 8 days), AD is daily (fresh ≤ 4 days, weekend slack). */
 function updateMeta() {
-  const p = cur();
-  $("meta").textContent =
-    `Last updated: ${p.data_end} (generated ${p.generated_at}) | Benchmark: ${p.benchmark}`;
+  const bp = DATA.big_picture, ad = DATA.asset_detail;
+  $("benchLabel").textContent = cur().benchmark;
+  $("stampBP").innerHTML = `BP <b>${bp.data_end}</b>`;
+  $("stampAD").innerHTML = `AD <b>${ad.data_end}</b>`;
+  const age = d => (Date.now() - new Date(d + "T00:00:00Z")) / 864e5;
+  const ok = age(bp.data_end) <= 8 && age(ad.data_end) <= 4;
+  const badge = $("statusBadge");
+  badge.textContent = ok ? "● DATA OK" : "● DATA STALE";
+  badge.className = "badge " + (ok ? "ok" : "stale");
 }
 
 /* ---------------- summary table ---------------- */
@@ -372,15 +448,16 @@ function renderTable(symbols, colors) {
       note = `${c.prev_quadrant} → ${c.quadrant}`;
     else if (c.quadrant === "Weakening" && ["N","NE","E"].includes(c.heading))
       note = "hook? หัวชี้กลับขึ้น";
-    return `<tr>
-      <td><span class="dot" style="background:${colors[sym]}"></span><b>${sym}</b>
-          <span style="color:var(--muted)"> ${a.name}</span></td>
-      <td><span class="q-badge q-${c.quadrant}">${QUAD_TH[c.quadrant]}</span></td>
-      <td>${ARROWS[c.heading] || ""} ${c.heading || ""}</td>
+    const [glyph, dir] = HEAD_GLYPH(c.heading);
+    return `<tr class="q-${c.quadrant}">
+      <td class="asset-cell"><span class="dot" style="background:${colors[sym]}"></span><span class="sym">${sym}</span>
+          <span class="asset-name">${a.name}</span></td>
+      <td><span class="quad-label q-${c.quadrant}">${c.quadrant.toUpperCase()}</span></td>
+      <td><span class="hd ${dir}">${glyph} ${c.heading || ""}</span></td>
       <td class="num">${c.ratio.toFixed(2)}</td>
       <td class="num">${c.momentum.toFixed(2)}</td>
       <td class="num">${fmt(dR)} / ${fmt(dM)}</td>
-      <td>${note}</td>
+      <td class="note">${note}</td>
     </tr>`;
   });
   $("tbody").innerHTML = rows.join("");
@@ -409,7 +486,7 @@ function renderReads(symbols) {
     "เพื่อการศึกษาเท่านั้น ไม่ใช่คำแนะนำการลงทุน — " + cur().disclaimer;
 }
 
-/* ---------------- tabs / controls / theme ---------------- */
+/* ---------------- tabs / controls ---------------- */
 function renderTabs() {
   $("tabs").innerHTML = Object.entries(DATA).map(([key, p]) =>
     `<button class="tab ${key === view ? "active" : ""}" data-view="${key}">${p.views[key].label}</button>`
@@ -422,15 +499,6 @@ $("tailSlider").addEventListener("input", e => {
   tailLen = +e.target.value; $("tailVal").textContent = tailLen; render();
 });
 
-function setTheme(dark) {
-  document.documentElement.dataset.theme = dark ? "dark" : "light";
-  localStorage.setItem("rrg-theme", dark ? "dark" : "light");
-  if (DATA) render();
-}
-$("themeBtn").addEventListener("click", () => setTheme(!isDark()));
-setTheme((localStorage.getItem("rrg-theme") ||
-  (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")) === "dark");
-
 /* ---------------- boot ---------------- */
 const loadJSON = path => fetch(path)
   .then(r => { if (!r.ok) throw new Error(`${path}: ${r.status}`); return r.json(); });
@@ -439,7 +507,7 @@ Promise.all([loadJSON("data_bigpicture.json"), loadJSON("data_assetdetail.json")
   .then(([bp, ad]) => {
     DATA = { big_picture: bp, asset_detail: ad };
     $("app").style.display = "";
-    renderTabs(); render();   // render() also sets the per-view meta line
+    renderTabs(); render();   // render() also sets the header stamps + badge
   })
   .catch(() => { $("err").style.display = "block"; });
 </script>
