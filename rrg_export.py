@@ -42,8 +42,13 @@ def heading(d_ratio: float, d_momentum: float) -> str:
     return _HEADINGS[int((angle + 22.5) // 45) % 8]
 
 
-def build_payload(tails: pd.DataFrame, data_start, data_end) -> dict:
-    """Assemble the data.json payload from a get_tails() DataFrame."""
+def build_payload(tails: pd.DataFrame, data_start, data_end,
+                  views: dict | None = None) -> dict:
+    """Assemble a data payload from a get_tails() DataFrame.
+
+    `views` maps view key -> {"label", "symbols"}; defaults to both views
+    (single-view exports pass just their own so each JSON file stands alone).
+    """
     assets = {}
     for sym, grp in tails.groupby("symbol"):
         grp = grp.sort_values("date")
@@ -75,10 +80,12 @@ def build_payload(tails: pd.DataFrame, data_start, data_end) -> dict:
         "views": {
             # only symbols that actually computed (a ticker skipped for short
             # history must not appear in a view the frontend will render)
-            "big_picture": {"label": "Big Picture",
-                            "symbols": [s for s in BIG_PICTURE if s in assets]},
-            "asset_detail": {"label": "Asset Detail",
-                             "symbols": [s for s in ASSET_DETAIL if s in assets]},
+            key: {"label": v["label"],
+                  "symbols": [s for s in v["symbols"] if s in assets]}
+            for key, v in (views if views is not None else {
+                "big_picture": {"label": "Big Picture", "symbols": BIG_PICTURE},
+                "asset_detail": {"label": "Asset Detail", "symbols": ASSET_DETAIL},
+            }).items()
         },
         "assets": assets,
         "disclaimer": (
@@ -88,21 +95,46 @@ def build_payload(tails: pd.DataFrame, data_start, data_end) -> dict:
     }
 
 
-def export(path: str = "data.json") -> dict:
-    prices = fetch_weekly_closes(TICKERS)
-    rrg = compute_rrg(prices)
-    tails = get_tails(rrg)
-    payload = build_payload(tails, prices.index[0], prices.index[-1])
-    with open(path, "w") as f:
+# Per-view export config: Big Picture is strictly weekly (completed Fridays
+# only); Asset Detail refreshes daily, so its newest point uses the latest
+# available close (include_partial). Separate files so the two update
+# cadences never overwrite each other.
+VIEWS = {
+    "bigpicture": {"key": "big_picture", "label": "Big Picture",
+                   "symbols": BIG_PICTURE, "include_partial": False,
+                   "path": "data_bigpicture.json"},
+    "assetdetail": {"key": "asset_detail", "label": "Asset Detail",
+                    "symbols": ASSET_DETAIL, "include_partial": True,
+                    "path": "data_assetdetail.json"},
+}
+
+
+def export_view(view: str) -> dict:
+    cfg = VIEWS[view]
+    tickers = list(dict.fromkeys([*cfg["symbols"], BENCHMARK]))
+    prices = fetch_weekly_closes(tickers, include_partial=cfg["include_partial"])
+    tails = get_tails(compute_rrg(prices))
+    payload = build_payload(
+        tails, prices.index[0], prices.index[-1],
+        views={cfg["key"]: {"label": cfg["label"], "symbols": cfg["symbols"]}})
+    with open(cfg["path"], "w") as f:
         json.dump(payload, f, indent=2)
     return payload
 
 
 if __name__ == "__main__":
-    payload = export()
-    n = len(payload["assets"])
-    print(f"Wrote data.json — {n} assets, data through {payload['data_end']}")
-    for sym, a in sorted(payload["assets"].items()):
-        c = a["current"]
-        print(f"  {sym:8s} {c['quadrant']:10s} heading {c.get('heading', '-'):3s} "
-              f"({c['ratio']:.2f}, {c['momentum']:.2f})")
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Export RRG view data to JSON")
+    parser.add_argument("--view", choices=[*VIEWS, "both"], default="both",
+                        help="which view file to generate (default: both)")
+    args = parser.parse_args()
+
+    for view in (list(VIEWS) if args.view == "both" else [args.view]):
+        payload = export_view(view)
+        n = len(payload["assets"])
+        print(f"Wrote {VIEWS[view]['path']} — {n} assets, data through {payload['data_end']}")
+        for sym, a in sorted(payload["assets"].items()):
+            c = a["current"]
+            print(f"  {sym:8s} {c['quadrant']:10s} heading {c.get('heading', '-'):3s} "
+                  f"({c['ratio']:.2f}, {c['momentum']:.2f})")

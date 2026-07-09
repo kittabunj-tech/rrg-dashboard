@@ -1,23 +1,61 @@
 name: Update RRG data
 
+# GitHub Actions cron is UTC only (and may fire 5-15 min late — acceptable).
+# 00:30 UTC = 07:30 ICT (Thailand), after the latest US close (~04:00 ICT).
 on:
   schedule:
-    # Every Saturday 07:30 ICT (Thailand, UTC+7) = 00:30 UTC
-    - cron: "30 0 * * 6"
-  workflow_dispatch: {}
+    - cron: "30 0 * * *"   # daily        → Asset Detail
+    - cron: "30 0 * * 6"   # Saturday     → Big Picture (weekly, after Fri close)
+  workflow_dispatch:
+    inputs:
+      view:
+        description: Which view to update
+        type: choice
+        options: [both, bigpicture, assetdetail]
+        default: both
 
 permissions:
   contents: write
   issues: write
 
+# Both crons fire at the same minute on Saturdays; one shared group +
+# max-parallel below keeps the runs from racing each other's git push.
 concurrency:
   group: update-rrg-data
   cancel-in-progress: false
 
 jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      views: ${{ steps.pick.outputs.views }}
+    steps:
+      - id: pick
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            case "${{ inputs.view }}" in
+              both) views='["bigpicture","assetdetail"]' ;;
+              *)    views='["${{ inputs.view }}"]' ;;
+            esac
+          elif [ "${{ github.event.schedule }}" = "30 0 * * 6" ]; then
+            views='["bigpicture"]'
+          else
+            views='["assetdetail"]'
+          fi
+          echo "views=$views" >> "$GITHUB_OUTPUT"
+          echo "Will update: $views"
+
   update:
+    needs: plan
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    strategy:
+      matrix:
+        view: ${{ fromJSON(needs.plan.outputs.views) }}
+      max-parallel: 1
+      fail-fast: false
+    env:
+      DATA_FILE: data_${{ matrix.view }}.json
     steps:
       - uses: actions/checkout@v4
 
@@ -32,19 +70,24 @@ jobs:
       - name: Run offline unit tests
         run: pytest -q
 
-      - name: Generate and validate data.json
+      - name: Generate and validate ${{ env.DATA_FILE }}
         id: gen
         continue-on-error: true
         run: |
           set -euo pipefail
-          python rrg_export.py
-          python - <<'EOF'
+          python rrg_export.py --view "${{ matrix.view }}"
+          python - "$DATA_FILE" <<'EOF'
           import json, sys
           from datetime import date, timedelta
 
-          d = json.load(open("data.json"))
+          path = sys.argv[1]
+          d = json.load(open(path))
           assets = d["assets"]
-          assert len(assets) >= 10, f"only {len(assets)} assets"
+          assert assets, "no assets computed"
+          for key, v in d["views"].items():
+              assert v["symbols"], f"view {key} has no symbols"
+              missing = [s for s in v["symbols"] if s not in assets]
+              assert not missing, f"view {key} references missing assets {missing}"
           for sym, a in assets.items():
               assert len(a["tail"]) == d["params"]["tail_length"], f"{sym}: short tail"
               cur = a["current"]
@@ -52,12 +95,14 @@ jobs:
                   f"{sym}: implausible coords {cur['ratio']}, {cur['momentum']}"
           staleness = date.today() - date.fromisoformat(d["data_end"])
           assert staleness <= timedelta(days=14), f"data_end stale by {staleness.days}d"
-          print(f"OK: {len(assets)} assets, data through {d['data_end']}")
+          print(f"OK: {path} — {len(assets)} assets, data through {d['data_end']}")
           EOF
 
-      - name: Restore previous data.json on failure
+      - name: Restore previous ${{ env.DATA_FILE }} on failure
         if: steps.gen.outcome == 'failure'
-        run: git checkout -- data.json 2>/dev/null || true
+        run: |
+          echo "::error::${{ matrix.view }} data generation failed — keeping previous $DATA_FILE"
+          git checkout -- "$DATA_FILE" 2>/dev/null || true
 
       - name: Open alert issue on failure
         if: steps.gen.outcome == 'failure'
@@ -66,8 +111,8 @@ jobs:
         run: |
           gh label create rrg-data-failure --color D93F0B \
             --description "Automated RRG data refresh failed" --force
-          title="RRG data update failed ($(date -u +%F))"
-          body="Scheduled data refresh failed; the previous data.json was kept.
+          title="RRG ${{ matrix.view }} update failed ($(date -u +%F))"
+          body="Scheduled ${{ matrix.view }} refresh failed; the previous $DATA_FILE was kept.
           Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           Check yfinance availability / ticker changes, then re-run the workflow manually."
           existing=$(gh issue list --label rrg-data-failure --state open \
@@ -83,11 +128,13 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data.json
+          git add "$DATA_FILE"
           if git diff --cached --quiet; then
             echo "No data changes; nothing to commit."
           else
-            git commit -m "chore: update RRG data ($(date -u +%F))"
+            git commit -m "chore: update RRG ${{ matrix.view }} data ($(date -u +%F))"
+            # another run may have pushed meanwhile — rebase then push
+            git pull --rebase origin main
             git push
           fi
 

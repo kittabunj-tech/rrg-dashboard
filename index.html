@@ -97,7 +97,7 @@
     <button class="theme-btn" id="themeBtn">🌓</button>
   </header>
 
-  <div id="err">โหลด <code>data.json</code> ไม่ได้ — ถ้าเปิดจากไฟล์โดยตรง ให้รัน
+  <div id="err">โหลด <code>data_bigpicture.json</code> / <code>data_assetdetail.json</code> ไม่ได้ — ถ้าเปิดจากไฟล์โดยตรง ให้รัน
     <code>python3 -m http.server</code> ในโฟลเดอร์นี้แล้วเปิด <code>http://localhost:8000</code></div>
 
   <div id="app" style="display:none">
@@ -159,11 +159,14 @@ const QUAD_TH = { Leading: "🟢 Leading", Weakening: "🟡 Weakening",
                   Lagging: "🔴 Lagging", Improving: "🔵 Improving" };
 const ARROWS = { N:"↑", NE:"↗", E:"→", SE:"↘", S:"↓", SW:"↙", W:"←", NW:"↖", flat:"·" };
 
+/* DATA maps view key → its own payload file (the two views update on
+   different schedules: Big Picture weekly, Asset Detail daily). */
 let DATA = null;
 let view = "big_picture";
 let tailLen = 10;
 
 const $ = id => document.getElementById(id);
+const cur = () => DATA[view];   // payload of the active view
 const cssVar = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 const isDark = () => document.documentElement.dataset.theme === "dark";
 
@@ -222,19 +225,19 @@ function bindZoomHandlers(gd) {
 
 /* ---------------- chart ---------------- */
 function render() {
-  const symbols = DATA.views[view].symbols;
+  const symbols = cur().views[view].symbols;
   const colors = colorMap(symbols);
   const traces = [], annotations = [];
 
   // axis range: symmetric around 100, from visible data
   let ext = 2.5;
   for (const s of symbols)
-    for (const p of DATA.assets[s].tail.slice(-tailLen))
+    for (const p of cur().assets[s].tail.slice(-tailLen))
       ext = Math.max(ext, Math.abs(p.ratio - 100), Math.abs(p.momentum - 100));
   const lo = 100 - ext * 1.12, hi = 100 + ext * 1.12;
 
   for (const sym of symbols) {
-    const a = DATA.assets[sym];
+    const a = cur().assets[sym];
     const tail = a.tail.slice(-tailLen);
     const xs = tail.map(p => p.ratio), ys = tail.map(p => p.momentum);
     const cd = tail.map(p => [a.name, p.quadrant, p.date]);
@@ -345,14 +348,22 @@ function render() {
     const saved = viewRanges[view];
     if (saved) Plotly.relayout(gd, { "xaxis.range": saved.x, "yaxis.range": saved.y });
   });
+  updateMeta();
   renderTable(symbols, colors);
   renderReads(symbols);
+}
+
+/* per-view "last updated": each view's payload carries its own timestamps */
+function updateMeta() {
+  const p = cur();
+  $("meta").textContent =
+    `Last updated: ${p.data_end} (generated ${p.generated_at}) | Benchmark: ${p.benchmark}`;
 }
 
 /* ---------------- summary table ---------------- */
 function renderTable(symbols, colors) {
   const rows = symbols.map(sym => {
-    const a = DATA.assets[sym], c = a.current, t = a.tail;
+    const a = cur().assets[sym], c = a.current, t = a.tail;
     const prev2 = t.length >= 3 ? t[t.length - 3] : t[0];
     const dR = c.ratio - prev2.ratio, dM = c.momentum - prev2.momentum;
     const fmt = v => (v >= 0 ? "+" : "") + v.toFixed(2);
@@ -379,7 +390,7 @@ function renderTable(symbols, colors) {
 function renderReads(symbols) {
   const reads = [];
   for (const sym of symbols) {
-    const a = DATA.assets[sym], c = a.current;
+    const a = cur().assets[sym], c = a.current;
     const label = `<b>${sym}</b> (${a.name})`;
     if (c.prev_quadrant && c.prev_quadrant !== c.quadrant)
       reads.push(`${label} เพิ่งข้ามจาก ${c.prev_quadrant} → <b>${c.quadrant}</b>` +
@@ -395,13 +406,13 @@ function renderReads(symbols) {
   if (!reads.length) reads.push("ไม่มีการข้าม quadrant หรือ pattern เด่นในรอบนี้");
   $("reads").innerHTML = reads.map(r => `<li>${r}</li>`).join("");
   $("disclaimer").textContent =
-    "เพื่อการศึกษาเท่านั้น ไม่ใช่คำแนะนำการลงทุน — " + DATA.disclaimer;
+    "เพื่อการศึกษาเท่านั้น ไม่ใช่คำแนะนำการลงทุน — " + cur().disclaimer;
 }
 
 /* ---------------- tabs / controls / theme ---------------- */
 function renderTabs() {
-  $("tabs").innerHTML = Object.entries(DATA.views).map(([key, v]) =>
-    `<button class="tab ${key === view ? "active" : ""}" data-view="${key}">${v.label}</button>`
+  $("tabs").innerHTML = Object.entries(DATA).map(([key, p]) =>
+    `<button class="tab ${key === view ? "active" : ""}" data-view="${key}">${p.views[key].label}</button>`
   ).join("");
   $("tabs").querySelectorAll(".tab").forEach(btn =>
     btn.addEventListener("click", () => { view = btn.dataset.view; renderTabs(); render(); }));
@@ -421,14 +432,14 @@ setTheme((localStorage.getItem("rrg-theme") ||
   (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")) === "dark");
 
 /* ---------------- boot ---------------- */
-fetch("data.json")
-  .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
-  .then(d => {
-    DATA = d;
-    $("meta").textContent =
-      `Last updated: ${d.data_end} (generated ${d.generated_at}) | Benchmark: ${d.benchmark}`;
+const loadJSON = path => fetch(path)
+  .then(r => { if (!r.ok) throw new Error(`${path}: ${r.status}`); return r.json(); });
+
+Promise.all([loadJSON("data_bigpicture.json"), loadJSON("data_assetdetail.json")])
+  .then(([bp, ad]) => {
+    DATA = { big_picture: bp, asset_detail: ad };
     $("app").style.display = "";
-    renderTabs(); render();
+    renderTabs(); render();   // render() also sets the per-view meta line
   })
   .catch(() => { $("err").style.display = "block"; });
 </script>

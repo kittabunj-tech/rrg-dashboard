@@ -1,6 +1,14 @@
-# `data.json` Schema (v1.0)
+# Data JSON Schema (v1.0)
 
-Output of `rrg_export.py`, consumed by the Phase 3 frontend.
+Output of `rrg_export.py`, consumed by the Phase 3 frontend. Since the
+split-cadence update there are **two files with the same schema**, each
+carrying only its own view (so the two update schedules never overwrite
+each other):
+
+| File | View | Cadence | Newest point |
+|---|---|---|---|
+| `data_bigpicture.json` | `big_picture` | weekly (Sat 07:30 ICT) | last completed Friday |
+| `data_assetdetail.json` | `asset_detail` | daily (07:30 ICT) | latest available close (in-progress week; its `date` is the actual last trading day, not a Friday) |
 
 ```jsonc
 {

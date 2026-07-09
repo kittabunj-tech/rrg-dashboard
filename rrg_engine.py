@@ -64,6 +64,7 @@ def fetch_weekly_closes(
     tickers: Iterable[str] = TICKERS,
     years: int = 3,
     end: Optional[pd.Timestamp] = None,
+    include_partial: bool = False,
 ) -> pd.DataFrame:
     """Fetch daily closes from yfinance and align to Friday weekly closes.
 
@@ -71,6 +72,12 @@ def fetch_weekly_closes(
     resampled to W-FRI taking the last available close of each week; ETF
     holiday gaps are forward-filled before resampling so a Friday holiday
     falls back to Thursday's close.
+
+    include_partial=False (weekly cadence) drops the in-progress week, so the
+    series ends on the last completed Friday. include_partial=True (daily
+    cadence) keeps it as one extra row built from the latest available close
+    and dated with the actual last trading day — completed weeks are identical
+    either way, so only the newest point moves between daily runs.
     """
     import yfinance as yf
 
@@ -94,10 +101,15 @@ def fetch_weekly_closes(
     # close, then take the last value of each Mon-Fri week.
     weekly = closes.ffill().resample("W-FRI").last()
 
-    # Drop the in-progress week: resample labels the current partial week with
-    # the upcoming Friday, which hasn't closed yet.
+    # The resample labels the current partial week with the upcoming Friday,
+    # which hasn't closed yet: drop it (weekly cadence) or keep it relabeled
+    # to the true last trading day (daily cadence).
     if len(weekly) and weekly.index[-1] > end:
-        weekly = weekly.iloc[:-1]
+        if include_partial:
+            last_daily = closes.dropna(how="all").index[-1]
+            weekly.index = weekly.index[:-1].append(pd.DatetimeIndex([last_daily]))
+        else:
+            weekly = weekly.iloc[:-1]
 
     # Drop leading rows where the benchmark has no data yet.
     if weekly[BENCHMARK].isna().all():
@@ -272,30 +284,47 @@ def plot_rrg(
 # CLI entry point
 # ---------------------------------------------------------------------------
 
+# CLI view names → (view key, symbols, partial-week mode). Big Picture stays
+# strictly weekly (completed Fridays only); Asset Detail refreshes daily, so
+# its newest point is built from the latest available close.
+VIEW_RUNS = {
+    "bigpicture": ("big_picture", BIG_PICTURE, False),
+    "assetdetail": ("asset_detail", ASSET_DETAIL, True),
+}
+
+
 def main():
+    import argparse
+
     logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(message)s")
-    print(f"Fetching 3y weekly closes for {len(TICKERS)} tickers...")
-    prices = fetch_weekly_closes()
-    print(f"  {len(prices)} weeks, {prices.index[0].date()} → {prices.index[-1].date()}, "
-          f"{len(prices.columns)}/{len(TICKERS)} tickers usable")
+    parser = argparse.ArgumentParser(description="Compute RRG data and diagnostic charts")
+    parser.add_argument("--view", choices=[*VIEW_RUNS, "both"], default="both",
+                        help="which view to compute (default: both)")
+    args = parser.parse_args()
+    runs = list(VIEW_RUNS) if args.view == "both" else [args.view]
 
-    rrg = compute_rrg(prices)
-    tails = get_tails(rrg)
+    for run in runs:
+        key, symbols, partial = VIEW_RUNS[run]
+        tickers = list(dict.fromkeys([*symbols, BENCHMARK]))
+        print(f"[{run}] fetching 3y weekly closes for {len(tickers)} tickers"
+              f"{' (incl. partial week)' if partial else ''}...")
+        prices = fetch_weekly_closes(tickers, include_partial=partial)
+        print(f"  {len(prices)} weeks, {prices.index[0].date()} → {prices.index[-1].date()}, "
+              f"{len(prices.columns)}/{len(tickers)} tickers usable")
 
-    latest = (tails.sort_values("date").groupby("symbol").tail(1)
-              .set_index("symbol")[["date", "ratio", "momentum", "quadrant"]]
-              .sort_values("ratio", ascending=False))
-    print("\nLatest positions (benchmark AOR):")
-    print(latest.to_string(float_format="%.2f"))
+        tails = get_tails(compute_rrg(prices))
+        latest = (tails.sort_values("date").groupby("symbol").tail(1)
+                  .set_index("symbol")[["date", "ratio", "momentum", "quadrant"]]
+                  .sort_values("ratio", ascending=False))
+        print(f"\n[{run}] latest positions (benchmark AOR):")
+        print(latest.to_string(float_format="%.2f"))
 
-    tails.to_csv("rrg_tails.csv", index=False)
-    plot_rrg(tails, symbols=ASSET_DETAIL,
-             title="RRG — Asset Detail (weekly vs AOR)",
-             save_path="rrg_asset_detail.png")
-    plot_rrg(tails, symbols=BIG_PICTURE,
-             title="RRG — Big Picture (weekly vs AOR)",
-             save_path="rrg_big_picture.png")
-    print("\nSaved: rrg_tails.csv, rrg_asset_detail.png, rrg_big_picture.png")
+        tails.to_csv(f"rrg_tails_{run}.csv", index=False)
+        plot_rrg(tails, symbols=symbols,
+                 title=f"RRG — {key.replace('_', ' ').title()} (weekly vs AOR)",
+                 save_path=f"rrg_{run}.png")
+        print(f"Saved: rrg_tails_{run}.csv, rrg_{run}.png\n")
+
     print("Validation: compare SPY/QQQ/GLD/TLT quadrants & rotation vs "
           "StockCharts.com RRG (weekly, benchmark AOR); tune W1/W2 if <8/10 match.")
 
