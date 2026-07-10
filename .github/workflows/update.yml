@@ -1,11 +1,13 @@
 name: Update RRG data
 
 # GitHub Actions cron is UTC only (and may fire 5-15 min late — acceptable).
-# 00:30 UTC = 07:30 ICT (Thailand), after the latest US close (~04:00 ICT).
+# 00:41 UTC = 07:41 ICT (Thailand), after the latest US close (~04:00 ICT).
+# The odd minute is deliberate: :00/:30 are GitHub's most congested slots and
+# schedules there get delayed or silently dropped (the 00:30 cron never fired).
 on:
   schedule:
-    - cron: "30 0 * * *"   # daily        → Asset Detail
-    - cron: "30 0 * * 6"   # Saturday     → Big Picture (weekly, after Fri close)
+    - cron: "41 0 * * *"   # daily        → Asset Detail
+    - cron: "41 0 * * 6"   # Saturday     → Big Picture (weekly, after Fri close)
   workflow_dispatch:
     inputs:
       view:
@@ -37,7 +39,7 @@ jobs:
               both) views='["bigpicture","assetdetail"]' ;;
               *)    views='["${{ inputs.view }}"]' ;;
             esac
-          elif [ "${{ github.event.schedule }}" = "30 0 * * 6" ]; then
+          elif [ "${{ github.event.schedule }}" = "41 0 * * 6" ]; then
             views='["bigpicture"]'
           else
             views='["assetdetail"]'
