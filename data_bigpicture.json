@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-09T15:26:49Z",
+  "generated_at": "2026-07-11T03:34:47Z",
   "benchmark": "AOR",
   "params": {
     "w1": 14,
@@ -8,7 +8,7 @@
     "tail_length": 10
   },
   "data_start": "2023-02-24",
-  "data_end": "2026-07-03",
+  "data_end": "2026-07-10",
   "views": {
     "big_picture": {
       "label": "Big Picture",
@@ -24,12 +24,6 @@
     "AGG": {
       "name": "US Aggregate Bonds",
       "tail": [
-        {
-          "date": "2026-05-01",
-          "ratio": 98.4221,
-          "momentum": 98.8742,
-          "quadrant": "Lagging"
-        },
         {
           "date": "2026-05-08",
           "ratio": 98.1961,
@@ -56,39 +50,45 @@
         },
         {
           "date": "2026-06-05",
-          "ratio": 99.0171,
-          "momentum": 100.3818,
+          "ratio": 99.1068,
+          "momentum": 100.4173,
           "quadrant": "Improving"
         },
         {
           "date": "2026-06-12",
-          "ratio": 98.9833,
-          "momentum": 100.3536,
+          "ratio": 99.0583,
+          "momentum": 100.3815,
           "quadrant": "Improving"
         },
         {
           "date": "2026-06-19",
-          "ratio": 98.9107,
-          "momentum": 100.372,
+          "ratio": 98.9719,
+          "momentum": 100.3921,
           "quadrant": "Improving"
         },
         {
           "date": "2026-06-26",
-          "ratio": 99.5533,
-          "momentum": 100.8329,
+          "ratio": 99.6291,
+          "momentum": 100.8554,
           "quadrant": "Improving"
         },
         {
           "date": "2026-07-03",
-          "ratio": 98.9753,
-          "momentum": 100.4585,
+          "ratio": 99.0367,
+          "momentum": 100.4229,
+          "quadrant": "Improving"
+        },
+        {
+          "date": "2026-07-10",
+          "ratio": 98.8368,
+          "momentum": 100.3235,
           "quadrant": "Improving"
         }
       ],
       "current": {
-        "date": "2026-07-03",
-        "ratio": 98.9753,
-        "momentum": 100.4585,
+        "date": "2026-07-10",
+        "ratio": 98.8368,
+        "momentum": 100.3235,
         "quadrant": "Improving",
         "heading": "SW",
         "prev_quadrant": "Improving"
@@ -97,12 +97,6 @@
     "BIL": {
       "name": "Cash (1-3M T-Bill)",
       "tail": [
-        {
-          "date": "2026-05-01",
-          "ratio": 98.9867,
-          "momentum": 99.114,
-          "quadrant": "Lagging"
-        },
         {
           "date": "2026-05-08",
           "ratio": 98.5939,
@@ -129,53 +123,53 @@
         },
         {
           "date": "2026-06-05",
-          "ratio": 99.2328,
-          "momentum": 100.1976,
+          "ratio": 99.316,
+          "momentum": 100.2296,
           "quadrant": "Improving"
         },
         {
           "date": "2026-06-12",
-          "ratio": 99.0156,
-          "momentum": 99.9856,
-          "quadrant": "Lagging"
+          "ratio": 99.0833,
+          "momentum": 100.0101,
+          "quadrant": "Improving"
         },
         {
           "date": "2026-06-19",
-          "ratio": 98.9205,
-          "momentum": 100.1497,
+          "ratio": 98.9755,
+          "momentum": 100.1684,
           "quadrant": "Improving"
         },
         {
           "date": "2026-06-26",
-          "ratio": 99.4393,
-          "momentum": 100.7231,
+          "ratio": 99.5044,
+          "momentum": 100.7447,
           "quadrant": "Improving"
         },
         {
           "date": "2026-07-03",
-          "ratio": 98.967,
-          "momentum": 100.392,
+          "ratio": 99.0276,
+          "momentum": 100.3574,
+          "quadrant": "Improving"
+        },
+        {
+          "date": "2026-07-10",
+          "ratio": 99.1525,
+          "momentum": 100.6084,
           "quadrant": "Improving"
         }
       ],
       "current": {
-        "date": "2026-07-03",
-        "ratio": 98.967,
-        "momentum": 100.392,
+        "date": "2026-07-10",
+        "ratio": 99.1525,
+        "momentum": 100.6084,
         "quadrant": "Improving",
-        "heading": "SW",
+        "heading": "NE",
         "prev_quadrant": "Improving"
       }
     },
     "DBC": {
       "name": "Commodities",
       "tail": [
-        {
-          "date": "2026-05-01",
-          "ratio": 100.9904,
-          "momentum": 99.8188,
-          "quadrant": "Weakening"
-        },
         {
           "date": "2026-05-08",
           "ratio": 100.5147,
@@ -229,26 +223,26 @@
           "ratio": 98.1223,
           "momentum": 100.3716,
           "quadrant": "Improving"
+        },
+        {
+          "date": "2026-07-10",
+          "ratio": 98.8881,
+          "momentum": 101.8387,
+          "quadrant": "Improving"
         }
       ],
       "current": {
-        "date": "2026-07-03",
-        "ratio": 98.1223,
-        "momentum": 100.3716,
+        "date": "2026-07-10",
+        "ratio": 98.8881,
+        "momentum": 101.8387,
         "quadrant": "Improving",
-        "heading": "N",
-        "prev_quadrant": "Lagging"
+        "heading": "NE",
+        "prev_quadrant": "Improving"
       }
     },
     "VT": {
       "name": "Global Equities",
       "tail": [
-        {
-          "date": "2026-05-01",
-          "ratio": 101.6194,
-          "momentum": 101.1269,
-          "quadrant": "Leading"
-        },
         {
           "date": "2026-05-08",
           "ratio": 101.8808,
@@ -302,14 +296,20 @@
           "ratio": 100.2051,
           "momentum": 99.185,
           "quadrant": "Weakening"
+        },
+        {
+          "date": "2026-07-10",
+          "ratio": 101.2106,
+          "momentum": 99.7117,
+          "quadrant": "Weakening"
         }
       ],
       "current": {
-        "date": "2026-07-03",
-        "ratio": 100.2051,
-        "momentum": 99.185,
+        "date": "2026-07-10",
+        "ratio": 101.2106,
+        "momentum": 99.7117,
         "quadrant": "Weakening",
-        "heading": "NW",
+        "heading": "NE",
         "prev_quadrant": "Weakening"
       }
     }
