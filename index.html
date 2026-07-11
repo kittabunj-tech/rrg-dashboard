@@ -423,14 +423,16 @@ function render() {
 }
 
 /* header bar: both views' timestamps always visible + freshness badge.
-   BP is weekly (fresh ≤ 8 days), AD is daily (fresh ≤ 4 days, weekend slack). */
+   BP is weekly (fresh ≤ 9 days: last-Friday data is exactly 8.0 days old just
+   before the next Saturday run, so 8 would flap every Saturday morning);
+   AD is daily (fresh ≤ 5 days: covers weekends + a Monday market holiday). */
 function updateMeta() {
   const bp = DATA.big_picture, ad = DATA.asset_detail;
   $("benchLabel").textContent = cur().benchmark;
   $("stampBP").innerHTML = `BP <b>${bp.data_end}</b>`;
   $("stampAD").innerHTML = `AD <b>${ad.data_end}</b>`;
   const age = d => (Date.now() - new Date(d + "T00:00:00Z")) / 864e5;
-  const ok = age(bp.data_end) <= 8 && age(ad.data_end) <= 4;
+  const ok = age(bp.data_end) <= 9 && age(ad.data_end) <= 5;
   const badge = $("statusBadge");
   badge.textContent = ok ? "● DATA OK" : "● DATA STALE";
   badge.className = "badge " + (ok ? "ok" : "stale");

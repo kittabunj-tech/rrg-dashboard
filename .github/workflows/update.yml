@@ -7,7 +7,9 @@ name: Update RRG data
 on:
   schedule:
     - cron: "41 0 * * *"   # daily        → Asset Detail
+    - cron: "7 1 * * *"    # daily retry  → Asset Detail (no-op if 00:41 ran)
     - cron: "41 0 * * 6"   # Saturday     → Big Picture (weekly, after Fri close)
+    - cron: "7 1 * * 6"    # Sat retry    → Big Picture (no-op if 00:41 ran)
   workflow_dispatch:
     inputs:
       view:
@@ -39,7 +41,8 @@ jobs:
               both) views='["bigpicture","assetdetail"]' ;;
               *)    views='["${{ inputs.view }}"]' ;;
             esac
-          elif [ "${{ github.event.schedule }}" = "41 0 * * 6" ]; then
+          elif [ "${{ github.event.schedule }}" = "41 0 * * 6" ] || \
+               [ "${{ github.event.schedule }}" = "7 1 * * 6" ]; then
             views='["bigpicture"]'
           else
             views='["assetdetail"]'
@@ -72,8 +75,21 @@ jobs:
       - name: Run offline unit tests
         run: pytest -q
 
+      # Retry crons fire ~26 min after the primary; if the primary already
+      # refreshed this view today, the retry tick exits without touching data.
+      - name: Skip if already updated today (retry-cron dedupe)
+        id: dedupe
+        if: github.event_name == 'schedule'
+        run: |
+          gen=$(python -c "import json; print(json.load(open('$DATA_FILE'))['generated_at'][:10])" 2>/dev/null || echo none)
+          if [ "$gen" = "$(date -u +%F)" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "$DATA_FILE already generated today ($gen) — nothing to do."
+          fi
+
       - name: Generate and validate ${{ env.DATA_FILE }}
         id: gen
+        if: steps.dedupe.outputs.skip != 'true'
         continue-on-error: true
         run: |
           set -euo pipefail
