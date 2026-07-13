@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-13T03:07:50Z",
+  "generated_at": "2026-07-13T12:35:12Z",
   "benchmark": "AOR",
   "params": {
     "w1": 14,
@@ -166,15 +166,15 @@
         },
         {
           "date": "2026-07-13",
-          "ratio": 99.0607,
-          "momentum": 100.5031,
+          "ratio": 99.0169,
+          "momentum": 100.4812,
           "quadrant": "Improving"
         }
       ],
       "current": {
         "date": "2026-07-13",
-        "ratio": 99.0607,
-        "momentum": 100.5031,
+        "ratio": 99.0169,
+        "momentum": 100.4812,
         "quadrant": "Improving",
         "heading": "S",
         "prev_quadrant": "Improving"
@@ -312,15 +312,15 @@
         },
         {
           "date": "2026-07-13",
-          "ratio": 99.3568,
-          "momentum": 100.7064,
+          "ratio": 99.3099,
+          "momentum": 100.6783,
           "quadrant": "Improving"
         }
       ],
       "current": {
         "date": "2026-07-13",
-        "ratio": 99.3568,
-        "momentum": 100.7064,
+        "ratio": 99.3099,
+        "momentum": 100.6783,
         "quadrant": "Improving",
         "heading": "S",
         "prev_quadrant": "Improving"
@@ -715,7 +715,7 @@
         {
           "date": "2026-06-05",
           "ratio": 99.0311,
-          "momentum": 100.4929,
+          "momentum": 100.493,
           "quadrant": "Improving"
         },
         {
@@ -1159,7 +1159,7 @@
         {
           "date": "2026-06-12",
           "ratio": 99.1967,
-          "momentum": 100.984,
+          "momentum": 100.9839,
           "quadrant": "Improving"
         },
         {
