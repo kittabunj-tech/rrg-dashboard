@@ -1,14 +1,14 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-11T03:34:47Z",
+  "generated_at": "2026-07-18T03:44:42Z",
   "benchmark": "AOR",
   "params": {
     "w1": 14,
     "w2": 4,
     "tail_length": 10
   },
-  "data_start": "2023-02-24",
-  "data_end": "2026-07-10",
+  "data_start": "2023-03-03",
+  "data_end": "2026-07-17",
   "views": {
     "big_picture": {
       "label": "Big Picture",
@@ -24,12 +24,6 @@
     "AGG": {
       "name": "US Aggregate Bonds",
       "tail": [
-        {
-          "date": "2026-05-08",
-          "ratio": 98.1961,
-          "momentum": 99.5,
-          "quadrant": "Lagging"
-        },
         {
           "date": "2026-05-15",
           "ratio": 98.423,
@@ -83,26 +77,26 @@
           "ratio": 98.8368,
           "momentum": 100.3235,
           "quadrant": "Improving"
+        },
+        {
+          "date": "2026-07-17",
+          "ratio": 99.679,
+          "momentum": 100.7807,
+          "quadrant": "Improving"
         }
       ],
       "current": {
-        "date": "2026-07-10",
-        "ratio": 98.8368,
-        "momentum": 100.3235,
+        "date": "2026-07-17",
+        "ratio": 99.679,
+        "momentum": 100.7807,
         "quadrant": "Improving",
-        "heading": "SW",
+        "heading": "NE",
         "prev_quadrant": "Improving"
       }
     },
     "BIL": {
       "name": "Cash (1-3M T-Bill)",
       "tail": [
-        {
-          "date": "2026-05-08",
-          "ratio": 98.5939,
-          "momentum": 99.4429,
-          "quadrant": "Lagging"
-        },
         {
           "date": "2026-05-15",
           "ratio": 99.0738,
@@ -156,13 +150,19 @@
           "ratio": 99.1525,
           "momentum": 100.6084,
           "quadrant": "Improving"
+        },
+        {
+          "date": "2026-07-17",
+          "ratio": 100.2273,
+          "momentum": 101.2695,
+          "quadrant": "Leading"
         }
       ],
       "current": {
-        "date": "2026-07-10",
-        "ratio": 99.1525,
-        "momentum": 100.6084,
-        "quadrant": "Improving",
+        "date": "2026-07-17",
+        "ratio": 100.2273,
+        "momentum": 101.2695,
+        "quadrant": "Leading",
         "heading": "NE",
         "prev_quadrant": "Improving"
       }
@@ -170,12 +170,6 @@
     "DBC": {
       "name": "Commodities",
       "tail": [
-        {
-          "date": "2026-05-08",
-          "ratio": 100.5147,
-          "momentum": 100.1083,
-          "quadrant": "Leading"
-        },
         {
           "date": "2026-05-15",
           "ratio": 100.8691,
@@ -229,12 +223,18 @@
           "ratio": 98.8881,
           "momentum": 101.8387,
           "quadrant": "Improving"
+        },
+        {
+          "date": "2026-07-17",
+          "ratio": 99.9615,
+          "momentum": 102.3516,
+          "quadrant": "Improving"
         }
       ],
       "current": {
-        "date": "2026-07-10",
-        "ratio": 98.8881,
-        "momentum": 101.8387,
+        "date": "2026-07-17",
+        "ratio": 99.9615,
+        "momentum": 102.3516,
         "quadrant": "Improving",
         "heading": "NE",
         "prev_quadrant": "Improving"
@@ -243,12 +243,6 @@
     "VT": {
       "name": "Global Equities",
       "tail": [
-        {
-          "date": "2026-05-08",
-          "ratio": 101.8808,
-          "momentum": 100.5027,
-          "quadrant": "Leading"
-        },
         {
           "date": "2026-05-15",
           "ratio": 101.5619,
@@ -302,14 +296,20 @@
           "ratio": 101.2106,
           "momentum": 99.7117,
           "quadrant": "Weakening"
+        },
+        {
+          "date": "2026-07-17",
+          "ratio": 100.1384,
+          "momentum": 99.2164,
+          "quadrant": "Weakening"
         }
       ],
       "current": {
-        "date": "2026-07-10",
-        "ratio": 101.2106,
-        "momentum": 99.7117,
+        "date": "2026-07-17",
+        "ratio": 100.1384,
+        "momentum": 99.2164,
         "quadrant": "Weakening",
-        "heading": "NE",
+        "heading": "SW",
         "prev_quadrant": "Weakening"
       }
     }
