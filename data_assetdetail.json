@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-17T03:51:16Z",
+  "generated_at": "2026-07-18T03:45:18Z",
   "benchmark": "AOR",
   "params": {
     "w1": 14,
@@ -8,7 +8,7 @@
     "tail_length": 10
   },
   "data_start": "2023-03-03",
-  "data_end": "2026-07-17",
+  "data_end": "2026-07-18",
   "views": {
     "asset_detail": {
       "label": "Asset Detail",
@@ -37,12 +37,6 @@
     "BIL": {
       "name": "Cash (1-3M T-Bill)",
       "tail": [
-        {
-          "date": "2026-05-15",
-          "ratio": 99.0738,
-          "momentum": 100.0659,
-          "quadrant": "Improving"
-        },
         {
           "date": "2026-05-22",
           "ratio": 98.8671,
@@ -93,29 +87,29 @@
         },
         {
           "date": "2026-07-17",
-          "ratio": 99.6734,
-          "momentum": 100.9289,
-          "quadrant": "Improving"
+          "ratio": 100.2273,
+          "momentum": 101.2695,
+          "quadrant": "Leading"
+        },
+        {
+          "date": "2026-07-18",
+          "ratio": 100.3115,
+          "momentum": 100.8843,
+          "quadrant": "Leading"
         }
       ],
       "current": {
-        "date": "2026-07-17",
-        "ratio": 99.6734,
-        "momentum": 100.9289,
-        "quadrant": "Improving",
-        "heading": "NE",
-        "prev_quadrant": "Improving"
+        "date": "2026-07-18",
+        "ratio": 100.3115,
+        "momentum": 100.8843,
+        "quadrant": "Leading",
+        "heading": "S",
+        "prev_quadrant": "Leading"
       }
     },
     "BTC-USD": {
       "name": "Bitcoin",
       "tail": [
-        {
-          "date": "2026-05-15",
-          "ratio": 101.2137,
-          "momentum": 100.4179,
-          "quadrant": "Leading"
-        },
         {
           "date": "2026-05-22",
           "ratio": 100.0491,
@@ -166,29 +160,29 @@
         },
         {
           "date": "2026-07-17",
-          "ratio": 99.1364,
-          "momentum": 100.5407,
+          "ratio": 99.206,
+          "momentum": 100.5751,
+          "quadrant": "Improving"
+        },
+        {
+          "date": "2026-07-18",
+          "ratio": 99.3329,
+          "momentum": 100.6342,
           "quadrant": "Improving"
         }
       ],
       "current": {
-        "date": "2026-07-17",
-        "ratio": 99.1364,
-        "momentum": 100.5407,
+        "date": "2026-07-18",
+        "ratio": 99.3329,
+        "momentum": 100.6342,
         "quadrant": "Improving",
-        "heading": "SE",
+        "heading": "NE",
         "prev_quadrant": "Improving"
       }
     },
     "EIDO": {
       "name": "Indonesia",
       "tail": [
-        {
-          "date": "2026-05-15",
-          "ratio": 98.1301,
-          "momentum": 99.2828,
-          "quadrant": "Lagging"
-        },
         {
           "date": "2026-05-22",
           "ratio": 97.8117,
@@ -239,29 +233,29 @@
         },
         {
           "date": "2026-07-17",
-          "ratio": 99.3985,
-          "momentum": 100.6087,
+          "ratio": 99.573,
+          "momentum": 100.8254,
+          "quadrant": "Improving"
+        },
+        {
+          "date": "2026-07-18",
+          "ratio": 99.6979,
+          "momentum": 101.0704,
           "quadrant": "Improving"
         }
       ],
       "current": {
-        "date": "2026-07-17",
-        "ratio": 99.3985,
-        "momentum": 100.6087,
+        "date": "2026-07-18",
+        "ratio": 99.6979,
+        "momentum": 101.0704,
         "quadrant": "Improving",
-        "heading": "E",
+        "heading": "NE",
         "prev_quadrant": "Improving"
       }
     },
     "ETH-USD": {
       "name": "Ethereum",
       "tail": [
-        {
-          "date": "2026-05-15",
-          "ratio": 100.1256,
-          "momentum": 99.4846,
-          "quadrant": "Weakening"
-        },
         {
           "date": "2026-05-22",
           "ratio": 98.835,
@@ -312,29 +306,29 @@
         },
         {
           "date": "2026-07-17",
-          "ratio": 99.5578,
-          "momentum": 100.8251,
+          "ratio": 99.6264,
+          "momentum": 100.8651,
+          "quadrant": "Improving"
+        },
+        {
+          "date": "2026-07-18",
+          "ratio": 99.6697,
+          "momentum": 100.8857,
           "quadrant": "Improving"
         }
       ],
       "current": {
-        "date": "2026-07-17",
-        "ratio": 99.5578,
-        "momentum": 100.8251,
+        "date": "2026-07-18",
+        "ratio": 99.6697,
+        "momentum": 100.8857,
         "quadrant": "Improving",
-        "heading": "SE",
+        "heading": "NE",
         "prev_quadrant": "Improving"
       }
     },
     "EWH": {
       "name": "Hong Kong",
       "tail": [
-        {
-          "date": "2026-05-15",
-          "ratio": 99.8689,
-          "momentum": 101.8202,
-          "quadrant": "Improving"
-        },
         {
           "date": "2026-05-22",
           "ratio": 97.8891,
@@ -385,29 +379,29 @@
         },
         {
           "date": "2026-07-17",
-          "ratio": 99.6003,
-          "momentum": 101.5887,
+          "ratio": 99.6815,
+          "momentum": 101.6309,
+          "quadrant": "Improving"
+        },
+        {
+          "date": "2026-07-18",
+          "ratio": 99.7638,
+          "momentum": 101.1871,
           "quadrant": "Improving"
         }
       ],
       "current": {
-        "date": "2026-07-17",
-        "ratio": 99.6003,
-        "momentum": 101.5887,
+        "date": "2026-07-18",
+        "ratio": 99.7638,
+        "momentum": 101.1871,
         "quadrant": "Improving",
-        "heading": "NE",
+        "heading": "S",
         "prev_quadrant": "Improving"
       }
     },
     "EWJ": {
       "name": "Japan",
       "tail": [
-        {
-          "date": "2026-05-15",
-          "ratio": 100.2414,
-          "momentum": 100.6179,
-          "quadrant": "Leading"
-        },
         {
           "date": "2026-05-22",
           "ratio": 100.3391,
@@ -458,29 +452,29 @@
         },
         {
           "date": "2026-07-17",
-          "ratio": 99.8407,
-          "momentum": 97.429,
+          "ratio": 99.2778,
+          "momentum": 97.2228,
+          "quadrant": "Lagging"
+        },
+        {
+          "date": "2026-07-18",
+          "ratio": 99.3241,
+          "momentum": 98.6631,
           "quadrant": "Lagging"
         }
       ],
       "current": {
-        "date": "2026-07-17",
-        "ratio": 99.8407,
-        "momentum": 97.429,
+        "date": "2026-07-18",
+        "ratio": 99.3241,
+        "momentum": 98.6631,
         "quadrant": "Lagging",
-        "heading": "SW",
-        "prev_quadrant": "Weakening"
+        "heading": "N",
+        "prev_quadrant": "Lagging"
       }
     },
     "EWT": {
       "name": "Taiwan",
       "tail": [
-        {
-          "date": "2026-05-15",
-          "ratio": 101.4439,
-          "momentum": 98.8649,
-          "quadrant": "Weakening"
-        },
         {
           "date": "2026-05-22",
           "ratio": 101.689,
@@ -531,29 +525,29 @@
         },
         {
           "date": "2026-07-17",
-          "ratio": 100.2266,
-          "momentum": 98.5925,
-          "quadrant": "Weakening"
+          "ratio": 99.8911,
+          "momentum": 98.3385,
+          "quadrant": "Lagging"
+        },
+        {
+          "date": "2026-07-18",
+          "ratio": 99.695,
+          "momentum": 98.9496,
+          "quadrant": "Lagging"
         }
       ],
       "current": {
-        "date": "2026-07-17",
-        "ratio": 100.2266,
-        "momentum": 98.5925,
-        "quadrant": "Weakening",
-        "heading": "SW",
-        "prev_quadrant": "Weakening"
+        "date": "2026-07-18",
+        "ratio": 99.695,
+        "momentum": 98.9496,
+        "quadrant": "Lagging",
+        "heading": "N",
+        "prev_quadrant": "Lagging"
       }
     },
     "EWY": {
       "name": "South Korea",
       "tail": [
-        {
-          "date": "2026-05-15",
-          "ratio": 101.7276,
-          "momentum": 99.9902,
-          "quadrant": "Weakening"
-        },
         {
           "date": "2026-05-22",
           "ratio": 101.5078,
@@ -604,29 +598,29 @@
         },
         {
           "date": "2026-07-17",
-          "ratio": 98.8941,
-          "momentum": 97.9535,
+          "ratio": 98.8946,
+          "momentum": 97.9537,
+          "quadrant": "Lagging"
+        },
+        {
+          "date": "2026-07-18",
+          "ratio": 98.8133,
+          "momentum": 98.736,
           "quadrant": "Lagging"
         }
       ],
       "current": {
-        "date": "2026-07-17",
-        "ratio": 98.8941,
-        "momentum": 97.9535,
+        "date": "2026-07-18",
+        "ratio": 98.8133,
+        "momentum": 98.736,
         "quadrant": "Lagging",
-        "heading": "SW",
-        "prev_quadrant": "Weakening"
+        "heading": "N",
+        "prev_quadrant": "Lagging"
       }
     },
     "GLD": {
       "name": "Gold",
       "tail": [
-        {
-          "date": "2026-05-15",
-          "ratio": 98.4165,
-          "momentum": 100.4353,
-          "quadrant": "Improving"
-        },
         {
           "date": "2026-05-22",
           "ratio": 98.435,
@@ -677,29 +671,29 @@
         },
         {
           "date": "2026-07-17",
-          "ratio": 98.5473,
-          "momentum": 101.1758,
+          "ratio": 98.6966,
+          "momentum": 101.392,
+          "quadrant": "Improving"
+        },
+        {
+          "date": "2026-07-18",
+          "ratio": 98.8263,
+          "momentum": 101.2863,
           "quadrant": "Improving"
         }
       ],
       "current": {
-        "date": "2026-07-17",
-        "ratio": 98.5473,
-        "momentum": 101.1758,
+        "date": "2026-07-18",
+        "ratio": 98.8263,
+        "momentum": 101.2863,
         "quadrant": "Improving",
-        "heading": "S",
+        "heading": "SE",
         "prev_quadrant": "Improving"
       }
     },
     "IEF": {
       "name": "US Treasury 7-10Y",
       "tail": [
-        {
-          "date": "2026-05-15",
-          "ratio": 98.2793,
-          "momentum": 99.9973,
-          "quadrant": "Lagging"
-        },
         {
           "date": "2026-05-22",
           "ratio": 98.4093,
@@ -750,29 +744,29 @@
         },
         {
           "date": "2026-07-17",
-          "ratio": 99.2746,
-          "momentum": 100.5416,
+          "ratio": 99.7058,
+          "momentum": 100.7953,
+          "quadrant": "Improving"
+        },
+        {
+          "date": "2026-07-18",
+          "ratio": 99.8406,
+          "momentum": 100.3079,
           "quadrant": "Improving"
         }
       ],
       "current": {
-        "date": "2026-07-17",
-        "ratio": 99.2746,
-        "momentum": 100.5416,
+        "date": "2026-07-18",
+        "ratio": 99.8406,
+        "momentum": 100.3079,
         "quadrant": "Improving",
-        "heading": "NE",
+        "heading": "S",
         "prev_quadrant": "Improving"
       }
     },
     "INDA": {
       "name": "India",
       "tail": [
-        {
-          "date": "2026-05-15",
-          "ratio": 98.4037,
-          "momentum": 98.5698,
-          "quadrant": "Lagging"
-        },
         {
           "date": "2026-05-22",
           "ratio": 98.5478,
@@ -823,29 +817,29 @@
         },
         {
           "date": "2026-07-17",
-          "ratio": 99.3487,
-          "momentum": 99.4012,
+          "ratio": 99.7282,
+          "momentum": 99.8414,
+          "quadrant": "Lagging"
+        },
+        {
+          "date": "2026-07-18",
+          "ratio": 99.9068,
+          "momentum": 99.4971,
           "quadrant": "Lagging"
         }
       ],
       "current": {
-        "date": "2026-07-17",
-        "ratio": 99.3487,
-        "momentum": 99.4012,
+        "date": "2026-07-18",
+        "ratio": 99.9068,
+        "momentum": 99.4971,
         "quadrant": "Lagging",
-        "heading": "S",
-        "prev_quadrant": "Improving"
+        "heading": "SE",
+        "prev_quadrant": "Lagging"
       }
     },
     "MCHI": {
       "name": "China",
       "tail": [
-        {
-          "date": "2026-05-15",
-          "ratio": 98.121,
-          "momentum": 99.1002,
-          "quadrant": "Lagging"
-        },
         {
           "date": "2026-05-22",
           "ratio": 97.7052,
@@ -896,29 +890,29 @@
         },
         {
           "date": "2026-07-17",
-          "ratio": 99.6219,
-          "momentum": 102.196,
+          "ratio": 99.3394,
+          "momentum": 101.9497,
+          "quadrant": "Improving"
+        },
+        {
+          "date": "2026-07-18",
+          "ratio": 99.4487,
+          "momentum": 101.8934,
           "quadrant": "Improving"
         }
       ],
       "current": {
-        "date": "2026-07-17",
-        "ratio": 99.6219,
-        "momentum": 102.196,
+        "date": "2026-07-18",
+        "ratio": 99.4487,
+        "momentum": 101.8934,
         "quadrant": "Improving",
-        "heading": "NE",
+        "heading": "SE",
         "prev_quadrant": "Improving"
       }
     },
     "QQQ": {
       "name": "Nasdaq 100",
       "tail": [
-        {
-          "date": "2026-05-15",
-          "ratio": 102.031,
-          "momentum": 99.3271,
-          "quadrant": "Weakening"
-        },
         {
           "date": "2026-05-22",
           "ratio": 101.7008,
@@ -969,29 +963,29 @@
         },
         {
           "date": "2026-07-17",
-          "ratio": 99.7932,
-          "momentum": 99.0801,
+          "ratio": 99.4644,
+          "momentum": 98.9277,
+          "quadrant": "Lagging"
+        },
+        {
+          "date": "2026-07-18",
+          "ratio": 99.145,
+          "momentum": 99.2469,
           "quadrant": "Lagging"
         }
       ],
       "current": {
-        "date": "2026-07-17",
-        "ratio": 99.7932,
-        "momentum": 99.0801,
+        "date": "2026-07-18",
+        "ratio": 99.145,
+        "momentum": 99.2469,
         "quadrant": "Lagging",
-        "heading": "SW",
-        "prev_quadrant": "Weakening"
+        "heading": "NW",
+        "prev_quadrant": "Lagging"
       }
     },
     "SLV": {
       "name": "Silver",
       "tail": [
-        {
-          "date": "2026-05-15",
-          "ratio": 99.2568,
-          "momentum": 100.1694,
-          "quadrant": "Improving"
-        },
         {
           "date": "2026-05-22",
           "ratio": 99.0818,
@@ -1042,29 +1036,29 @@
         },
         {
           "date": "2026-07-17",
-          "ratio": 98.3348,
-          "momentum": 100.8679,
+          "ratio": 98.3952,
+          "momentum": 100.9333,
+          "quadrant": "Improving"
+        },
+        {
+          "date": "2026-07-18",
+          "ratio": 98.6023,
+          "momentum": 101.4932,
           "quadrant": "Improving"
         }
       ],
       "current": {
-        "date": "2026-07-17",
-        "ratio": 98.3348,
-        "momentum": 100.8679,
+        "date": "2026-07-18",
+        "ratio": 98.6023,
+        "momentum": 101.4932,
         "quadrant": "Improving",
-        "heading": "SW",
+        "heading": "N",
         "prev_quadrant": "Improving"
       }
     },
     "SPY": {
       "name": "S&P 500",
       "tail": [
-        {
-          "date": "2026-05-15",
-          "ratio": 102.1356,
-          "momentum": 99.7817,
-          "quadrant": "Weakening"
-        },
         {
           "date": "2026-05-22",
           "ratio": 101.7006,
@@ -1115,29 +1109,29 @@
         },
         {
           "date": "2026-07-17",
-          "ratio": 101.0903,
-          "momentum": 99.9893,
+          "ratio": 100.7025,
+          "momentum": 99.783,
           "quadrant": "Weakening"
+        },
+        {
+          "date": "2026-07-18",
+          "ratio": 100.611,
+          "momentum": 100.1467,
+          "quadrant": "Leading"
         }
       ],
       "current": {
-        "date": "2026-07-17",
-        "ratio": 101.0903,
-        "momentum": 99.9893,
-        "quadrant": "Weakening",
-        "heading": "NW",
+        "date": "2026-07-18",
+        "ratio": 100.611,
+        "momentum": 100.1467,
+        "quadrant": "Leading",
+        "heading": "N",
         "prev_quadrant": "Weakening"
       }
     },
     "TLT": {
       "name": "US Treasury 20+Y",
       "tail": [
-        {
-          "date": "2026-05-15",
-          "ratio": 97.9656,
-          "momentum": 100.1016,
-          "quadrant": "Improving"
-        },
         {
           "date": "2026-05-22",
           "ratio": 98.3891,
@@ -1159,7 +1153,7 @@
         {
           "date": "2026-06-12",
           "ratio": 99.1967,
-          "momentum": 100.984,
+          "momentum": 100.9839,
           "quadrant": "Improving"
         },
         {
@@ -1188,29 +1182,29 @@
         },
         {
           "date": "2026-07-17",
-          "ratio": 98.8251,
-          "momentum": 99.9184,
+          "ratio": 99.3193,
+          "momentum": 100.2043,
+          "quadrant": "Improving"
+        },
+        {
+          "date": "2026-07-18",
+          "ratio": 99.4277,
+          "momentum": 99.653,
           "quadrant": "Lagging"
         }
       ],
       "current": {
-        "date": "2026-07-17",
-        "ratio": 98.8251,
-        "momentum": 99.9184,
+        "date": "2026-07-18",
+        "ratio": 99.4277,
+        "momentum": 99.653,
         "quadrant": "Lagging",
-        "heading": "SE",
+        "heading": "S",
         "prev_quadrant": "Improving"
       }
     },
     "VGK": {
       "name": "Europe",
       "tail": [
-        {
-          "date": "2026-05-15",
-          "ratio": 98.7336,
-          "momentum": 99.4311,
-          "quadrant": "Lagging"
-        },
         {
           "date": "2026-05-22",
           "ratio": 99.7967,
@@ -1261,18 +1255,24 @@
         },
         {
           "date": "2026-07-17",
-          "ratio": 100.972,
-          "momentum": 100.6616,
+          "ratio": 101.2196,
+          "momentum": 100.864,
+          "quadrant": "Leading"
+        },
+        {
+          "date": "2026-07-18",
+          "ratio": 101.4668,
+          "momentum": 101.402,
           "quadrant": "Leading"
         }
       ],
       "current": {
-        "date": "2026-07-17",
-        "ratio": 100.972,
-        "momentum": 100.6616,
+        "date": "2026-07-18",
+        "ratio": 101.4668,
+        "momentum": 101.402,
         "quadrant": "Leading",
         "heading": "NE",
-        "prev_quadrant": "Weakening"
+        "prev_quadrant": "Leading"
       }
     }
   },
