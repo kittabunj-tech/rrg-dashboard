@@ -149,7 +149,46 @@
   #err { color: var(--red); padding: 24px; text-align: center; display: none; }
   #err code { font-family: var(--mono); color: var(--amber); }
 
+  /* ---- asset price panel (click a point) ---- */
+  .modal-back {
+    display: none; position: fixed; inset: 0; z-index: 50;
+    background: rgba(0,0,0,0.72); align-items: center; justify-content: center;
+    padding: 16px;
+  }
+  .modal-back.open { display: flex; }
+  .modal {
+    background: var(--surface); border: 1px solid #2a2a28; border-radius: 6px;
+    width: min(720px, 96vw); max-height: 92vh; overflow: auto;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.8);
+  }
+  .modal-head {
+    display: flex; align-items: center; gap: 10px; padding: 10px 6px 10px 14px;
+    background: #141412; border-bottom: 1px solid var(--border);
+  }
+  .modal-head .sym { font-size: 1rem; color: var(--ink); }
+  .modal-close {
+    margin-left: auto; width: 44px; height: 44px; background: none;
+    border: none; color: var(--ink-2); font-size: 1rem; cursor: pointer;
+  }
+  .modal-close:hover { color: var(--ink); }
+  .modal-rs { padding: 10px 14px 0; font-size: 0.82rem; color: var(--ink-2); }
+  .modal-rs b { color: var(--amber); font-weight: 400; }
+  .modal-price { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px;
+                 padding: 6px 14px 4px; }
+  .modal-price .px { font-size: 1.25rem; color: var(--ink); font-weight: 600; }
+  .modal-price .chg.up   { color: var(--green); }
+  .modal-price .chg.down { color: var(--red); }
+  .tf { display: flex; gap: 4px; margin-left: auto; }
+  .tf button {
+    background: var(--surface-2); border: 1px solid var(--border); color: var(--ink-2);
+    font-family: var(--mono); font-size: 0.72rem; padding: 8px 12px;
+    border-radius: 3px; cursor: pointer; min-height: 36px;
+  }
+  .tf button.active { color: var(--amber); border-color: var(--amber); }
+  .attr { color: var(--muted); font-size: 0.7rem; }
+  #mChart { width: 100%; height: 360px; }
   @media (max-width: 640px) {
+    #mChart { height: 300px; }
     #chart { height: 420px; }
     .wrap { padding: 0 8px 16px; }
     header { padding: 10px 0; }
@@ -184,8 +223,8 @@
       <div id="chart"></div>
       <div class="controls">
         <label>TAIL <b id="tailVal">10</b>W</label>
-        <input type="range" id="tailSlider" min="4" max="12" value="10">
-        <span>· คลิก legend เพื่อเปิด/ปิดรายตัว · scroll/pinch = ซูม, ลาก = เลื่อน, double-click = รีเซ็ต</span>
+        <input type="range" id="tailSlider" min="1" max="10" value="10">
+        <span>· คลิกจุดบนกราฟเพื่อดูกราฟราคา · คลิก legend เพื่อเปิด/ปิดรายตัว · scroll/pinch = ซูม, double-click = รีเซ็ต</span>
       </div>
     </div>
 
@@ -208,6 +247,28 @@
       <ul class="reads" id="reads"></ul>
       <div class="disclaimer" id="disclaimer"></div>
     </div>
+  </div>
+</div>
+
+<div class="modal-back" id="modalBack">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <span class="sym mono" id="mSym"></span>
+      <span class="asset-name" id="mName"></span>
+      <button class="modal-close" id="mClose" aria-label="close">✕</button>
+    </div>
+    <div class="modal-rs mono" id="mRS"></div>
+    <div class="modal-price mono">
+      <span class="px" id="mPrice"></span>
+      <span class="chg" id="mChange"></span>
+      <span class="tf" id="mTf">
+        <button data-m="3">3MO</button>
+        <button data-m="6" class="active">6MO</button>
+        <button data-m="12">1Y</button>
+      </span>
+      <span class="attr">© Yahoo Finance</span>
+    </div>
+    <div id="mChart"></div>
   </div>
 </div>
 
@@ -273,6 +334,103 @@ function updateQuadLabels(gd) {
   });
   Plotly.relayout(gd, upd);
 }
+
+/* ---------------- asset price panel ---------------- */
+let modalSym = null, modalMonths = 6;
+
+function bindClickHandler(gd) {
+  if (gd._clickBound) return;
+  gd._clickBound = true;
+  gd.on("plotly_click", ev => {
+    const p = ev.points && ev.points[0];
+    if (p && p.data.legendgroup) openAssetPanel(p.data.legendgroup, p);
+  });
+}
+
+function openAssetPanel(sym, point) {
+  const a = cur().assets[sym];
+  if (!a) return;
+  modalSym = sym;
+  $("mSym").textContent = sym;
+  $("mName").textContent = "— " + a.name;
+
+  // RS line: the clicked point's values (tail dots included), like a terminal
+  const c = a.current;
+  const ratio = point ? point.x : c.ratio;
+  const mom   = point ? point.y : c.momentum;
+  const [, quad, date] = point?.customdata ?? [null, c.quadrant, c.date];
+  const latest = date === c.date ? " · latest" : "";
+  $("mRS").innerHTML =
+    `RS-Ratio <b>${ratio.toFixed(2)}</b> RS-Mom <b>${mom.toFixed(2)}</b> ` +
+    `Date <b>${date}</b> <span class="quad-label q-${quad}">● ${quad}</span>${latest}`;
+
+  const d = a.daily;
+  if (d && d.c.length >= 2) {
+    const n = d.c.length, last = d.c[n-1], prev = d.c[n-2];
+    const chg = last - prev, pct = 100 * chg / prev;
+    const dp = last >= 1000 ? 0 : 2;
+    $("mPrice").textContent = last.toLocaleString(undefined,
+      { minimumFractionDigits: dp, maximumFractionDigits: dp });
+    const el = $("mChange");
+    el.textContent = `${chg >= 0 ? "+" : ""}${chg.toFixed(2)} (${chg >= 0 ? "+" : ""}${pct.toFixed(2)}%)`;
+    el.className = "chg " + (chg >= 0 ? "up" : "down");
+    renderPriceChart(sym, modalMonths);
+  } else {
+    $("mPrice").textContent = "—";
+    $("mChange").textContent = "no price history";
+    $("mChange").className = "chg";
+    Plotly.purge("mChart");
+  }
+  $("modalBack").classList.add("open");
+}
+
+function renderPriceChart(sym, months) {
+  const d = cur().assets[sym]?.daily;
+  if (!d) return;
+  const cutoff = new Date(d.dates[d.dates.length - 1]);
+  cutoff.setMonth(cutoff.getMonth() - months);
+  const from = d.dates.findIndex(x => new Date(x) >= cutoff);
+  const s = k => d[k].slice(from);
+  const dates = d.dates.slice(from);
+  const up = "#26a626", down = "#e05252";
+  const volColors = s("c").map((v, i) => v >= s("o")[i] ? up : down);
+  Plotly.react("mChart", [
+    { type: "candlestick", x: dates, open: s("o"), high: s("h"),
+      low: s("l"), close: s("c"), yaxis: "y",
+      increasing: { line: { color: up, width: 1 } },
+      decreasing: { line: { color: down, width: 1 } },
+      hoverinfo: "x+y" },
+    { type: "bar", x: dates, y: s("v"), yaxis: "y2",
+      marker: { color: volColors }, opacity: 0.5, hoverinfo: "skip" },
+  ], {
+    paper_bgcolor: cssVar("--surface"), plot_bgcolor: cssVar("--surface"),
+    font: { color: cssVar("--ink-2"), size: 11,
+            family: '"IBM Plex Mono", monospace' },
+    margin: { l: 8, r: 56, t: 8, b: 28 }, autosize: true,
+    xaxis: { rangeslider: { visible: false }, gridcolor: cssVar("--grid"),
+             tickformat: "%b" },
+    yaxis: { domain: [0.26, 1], side: "right", gridcolor: cssVar("--grid"),
+             tickformat: "~s" },
+    yaxis2: { domain: [0, 0.2], side: "right", showticklabels: false,
+              gridcolor: cssVar("--grid") },
+    showlegend: false, dragmode: false,
+  }, { responsive: true, displayModeBar: false });
+}
+
+$("mClose").addEventListener("click", () => $("modalBack").classList.remove("open"));
+$("modalBack").addEventListener("click", e => {
+  if (e.target === $("modalBack")) $("modalBack").classList.remove("open");
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") $("modalBack").classList.remove("open");
+});
+$("mTf").querySelectorAll("button").forEach(btn =>
+  btn.addEventListener("click", () => {
+    modalMonths = +btn.dataset.m;
+    $("mTf").querySelectorAll("button").forEach(b =>
+      b.classList.toggle("active", b === btn));
+    if (modalSym) renderPriceChart(modalSym, modalMonths);
+  }));
 
 function bindZoomHandlers(gd) {
   if (gd._zoomBound) return;   // the chart div persists across Plotly.react
@@ -412,6 +570,7 @@ function render() {
     modeBarButtonsToRemove: ["select2d", "lasso2d", "autoScale2d"],
   }).then(gd => {
     bindZoomHandlers(gd);
+    bindClickHandler(gd);
     // returning to a tab: restore its saved zoom (react above drew defaults,
     // so double-click reset still returns to the default view, not the zoom)
     const saved = viewRanges[view];

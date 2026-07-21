@@ -18,7 +18,7 @@ from rrg_engine import (
     compute_rrg, fetch_weekly_closes, get_tails,
 )
 
-SCHEMA_VERSION = "1.0"
+SCHEMA_VERSION = "1.1"   # 1.1: assets may carry "daily" OHLCV history (additive)
 
 ASSET_NAMES = {
     "SPY": "S&P 500", "QQQ": "Nasdaq 100", "GLD": "Gold", "SLV": "Silver",
@@ -109,6 +109,32 @@ VIEWS = {
 }
 
 
+def fetch_daily_history(symbols, period: str = "1y") -> dict:
+    """1y of daily OHLCV per symbol, for the frontend's price-chart panel."""
+    import yfinance as yf
+
+    raw = yf.download(list(symbols), period=period, interval="1d",
+                      auto_adjust=True, progress=False, group_by="ticker")
+    out = {}
+    for sym in symbols:
+        try:
+            df = raw[sym] if isinstance(raw.columns, pd.MultiIndex) else raw
+        except KeyError:
+            continue
+        df = df.dropna(subset=["Close"])
+        if df.empty:
+            continue
+        out[sym] = {
+            "dates": [d.strftime("%Y-%m-%d") for d in df.index],
+            "o": [round(float(x), 4) for x in df["Open"]],
+            "h": [round(float(x), 4) for x in df["High"]],
+            "l": [round(float(x), 4) for x in df["Low"]],
+            "c": [round(float(x), 4) for x in df["Close"]],
+            "v": [int(x) for x in df["Volume"].fillna(0)],
+        }
+    return out
+
+
 def export_view(view: str) -> dict:
     cfg = VIEWS[view]
     tickers = list(dict.fromkeys([*cfg["symbols"], BENCHMARK]))
@@ -117,6 +143,9 @@ def export_view(view: str) -> dict:
     payload = build_payload(
         tails, prices.index[0], prices.index[-1],
         views={cfg["key"]: {"label": cfg["label"], "symbols": cfg["symbols"]}})
+    for sym, hist in fetch_daily_history(cfg["symbols"]).items():
+        if sym in payload["assets"]:
+            payload["assets"][sym]["daily"] = hist
     with open(cfg["path"], "w") as f:
         json.dump(payload, f, indent=2)
     return payload

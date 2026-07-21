@@ -50,6 +50,13 @@ each other):
 }
 ```
 
+## Schema 1.1 addition
+
+Each asset may carry `"daily"`: 1 year of daily OHLCV for the click-to-open
+price panel — parallel arrays `dates` (ISO), `o`, `h`, `l`, `c` (adjusted,
+4 dp), `v` (int). Absent if the ticker's history fetch failed; the frontend
+must treat it as optional.
+
 ## Field notes
 
 - **quadrant** ∈ `Leading | Weakening | Lagging | Improving` (boundaries at 100 inclusive to Leading side).
