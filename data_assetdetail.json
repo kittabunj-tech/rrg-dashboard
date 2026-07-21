@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-20T04:26:01Z",
+  "generated_at": "2026-07-21T03:59:28Z",
   "benchmark": "AOR",
   "params": {
     "w1": 14,
@@ -8,7 +8,7 @@
     "tail_length": 10
   },
   "data_start": "2023-03-03",
-  "data_end": "2026-07-20",
+  "data_end": "2026-07-21",
   "views": {
     "asset_detail": {
       "label": "Asset Detail",
@@ -92,18 +92,18 @@
           "quadrant": "Leading"
         },
         {
-          "date": "2026-07-20",
-          "ratio": 100.3115,
-          "momentum": 100.8843,
+          "date": "2026-07-21",
+          "ratio": 100.6697,
+          "momentum": 101.1495,
           "quadrant": "Leading"
         }
       ],
       "current": {
-        "date": "2026-07-20",
-        "ratio": 100.3115,
-        "momentum": 100.8843,
+        "date": "2026-07-21",
+        "ratio": 100.6697,
+        "momentum": 101.1495,
         "quadrant": "Leading",
-        "heading": "S",
+        "heading": "E",
         "prev_quadrant": "Leading"
       }
     },
@@ -165,16 +165,16 @@
           "quadrant": "Improving"
         },
         {
-          "date": "2026-07-20",
-          "ratio": 99.419,
-          "momentum": 100.6753,
+          "date": "2026-07-21",
+          "ratio": 99.5457,
+          "momentum": 100.7362,
           "quadrant": "Improving"
         }
       ],
       "current": {
-        "date": "2026-07-20",
-        "ratio": 99.419,
-        "momentum": 100.6753,
+        "date": "2026-07-21",
+        "ratio": 99.5457,
+        "momentum": 100.7362,
         "quadrant": "Improving",
         "heading": "NE",
         "prev_quadrant": "Improving"
@@ -238,16 +238,16 @@
           "quadrant": "Improving"
         },
         {
-          "date": "2026-07-20",
-          "ratio": 99.6979,
-          "momentum": 101.0704,
+          "date": "2026-07-21",
+          "ratio": 99.8032,
+          "momentum": 101.1934,
           "quadrant": "Improving"
         }
       ],
       "current": {
-        "date": "2026-07-20",
-        "ratio": 99.6979,
-        "momentum": 101.0704,
+        "date": "2026-07-21",
+        "ratio": 99.8032,
+        "momentum": 101.1934,
         "quadrant": "Improving",
         "heading": "NE",
         "prev_quadrant": "Improving"
@@ -311,16 +311,16 @@
           "quadrant": "Improving"
         },
         {
-          "date": "2026-07-20",
-          "ratio": 99.7729,
-          "momentum": 100.9493,
+          "date": "2026-07-21",
+          "ratio": 99.9796,
+          "momentum": 101.0636,
           "quadrant": "Improving"
         }
       ],
       "current": {
-        "date": "2026-07-20",
-        "ratio": 99.7729,
-        "momentum": 100.9493,
+        "date": "2026-07-21",
+        "ratio": 99.9796,
+        "momentum": 101.0636,
         "quadrant": "Improving",
         "heading": "NE",
         "prev_quadrant": "Improving"
@@ -384,18 +384,18 @@
           "quadrant": "Improving"
         },
         {
-          "date": "2026-07-20",
-          "ratio": 99.7638,
-          "momentum": 101.1871,
+          "date": "2026-07-21",
+          "ratio": 99.906,
+          "momentum": 101.2652,
           "quadrant": "Improving"
         }
       ],
       "current": {
-        "date": "2026-07-20",
-        "ratio": 99.7638,
-        "momentum": 101.1871,
+        "date": "2026-07-21",
+        "ratio": 99.906,
+        "momentum": 101.2652,
         "quadrant": "Improving",
-        "heading": "S",
+        "heading": "SE",
         "prev_quadrant": "Improving"
       }
     },
@@ -457,16 +457,16 @@
           "quadrant": "Lagging"
         },
         {
-          "date": "2026-07-20",
-          "ratio": 99.3241,
-          "momentum": 98.6631,
+          "date": "2026-07-21",
+          "ratio": 99.4562,
+          "momentum": 98.7486,
           "quadrant": "Lagging"
         }
       ],
       "current": {
-        "date": "2026-07-20",
-        "ratio": 99.3241,
-        "momentum": 98.6631,
+        "date": "2026-07-21",
+        "ratio": 99.4562,
+        "momentum": 98.7486,
         "quadrant": "Lagging",
         "heading": "N",
         "prev_quadrant": "Lagging"
@@ -530,18 +530,18 @@
           "quadrant": "Lagging"
         },
         {
-          "date": "2026-07-20",
-          "ratio": 99.695,
-          "momentum": 98.9496,
+          "date": "2026-07-21",
+          "ratio": 99.507,
+          "momentum": 98.785,
           "quadrant": "Lagging"
         }
       ],
       "current": {
-        "date": "2026-07-20",
-        "ratio": 99.695,
-        "momentum": 98.9496,
+        "date": "2026-07-21",
+        "ratio": 99.507,
+        "momentum": 98.785,
         "quadrant": "Lagging",
-        "heading": "N",
+        "heading": "NW",
         "prev_quadrant": "Lagging"
       }
     },
@@ -603,16 +603,16 @@
           "quadrant": "Lagging"
         },
         {
-          "date": "2026-07-20",
-          "ratio": 98.8133,
-          "momentum": 98.736,
+          "date": "2026-07-21",
+          "ratio": 98.8556,
+          "momentum": 98.7612,
           "quadrant": "Lagging"
         }
       ],
       "current": {
-        "date": "2026-07-20",
-        "ratio": 98.8133,
-        "momentum": 98.736,
+        "date": "2026-07-21",
+        "ratio": 98.8556,
+        "momentum": 98.7612,
         "quadrant": "Lagging",
         "heading": "N",
         "prev_quadrant": "Lagging"
@@ -676,16 +676,16 @@
           "quadrant": "Improving"
         },
         {
-          "date": "2026-07-20",
-          "ratio": 98.8263,
-          "momentum": 101.2863,
+          "date": "2026-07-21",
+          "ratio": 98.8384,
+          "momentum": 101.3025,
           "quadrant": "Improving"
         }
       ],
       "current": {
-        "date": "2026-07-20",
-        "ratio": 98.8263,
-        "momentum": 101.2863,
+        "date": "2026-07-21",
+        "ratio": 98.8384,
+        "momentum": 101.3025,
         "quadrant": "Improving",
         "heading": "SE",
         "prev_quadrant": "Improving"
@@ -709,7 +709,7 @@
         {
           "date": "2026-06-05",
           "ratio": 99.0311,
-          "momentum": 100.4929,
+          "momentum": 100.493,
           "quadrant": "Improving"
         },
         {
@@ -749,16 +749,16 @@
           "quadrant": "Improving"
         },
         {
-          "date": "2026-07-20",
-          "ratio": 99.8406,
-          "momentum": 100.3079,
+          "date": "2026-07-21",
+          "ratio": 99.8422,
+          "momentum": 100.309,
           "quadrant": "Improving"
         }
       ],
       "current": {
-        "date": "2026-07-20",
-        "ratio": 99.8406,
-        "momentum": 100.3079,
+        "date": "2026-07-21",
+        "ratio": 99.8422,
+        "momentum": 100.309,
         "quadrant": "Improving",
         "heading": "S",
         "prev_quadrant": "Improving"
@@ -822,18 +822,18 @@
           "quadrant": "Lagging"
         },
         {
-          "date": "2026-07-20",
-          "ratio": 99.9068,
-          "momentum": 99.4971,
+          "date": "2026-07-21",
+          "ratio": 99.6596,
+          "momentum": 99.195,
           "quadrant": "Lagging"
         }
       ],
       "current": {
-        "date": "2026-07-20",
-        "ratio": 99.9068,
-        "momentum": 99.4971,
+        "date": "2026-07-21",
+        "ratio": 99.6596,
+        "momentum": 99.195,
         "quadrant": "Lagging",
-        "heading": "SE",
+        "heading": "S",
         "prev_quadrant": "Lagging"
       }
     },
@@ -895,18 +895,18 @@
           "quadrant": "Improving"
         },
         {
-          "date": "2026-07-20",
-          "ratio": 99.4487,
-          "momentum": 101.8934,
+          "date": "2026-07-21",
+          "ratio": 99.9059,
+          "momentum": 102.2487,
           "quadrant": "Improving"
         }
       ],
       "current": {
-        "date": "2026-07-20",
-        "ratio": 99.4487,
-        "momentum": 101.8934,
+        "date": "2026-07-21",
+        "ratio": 99.9059,
+        "momentum": 102.2487,
         "quadrant": "Improving",
-        "heading": "SE",
+        "heading": "NE",
         "prev_quadrant": "Improving"
       }
     },
@@ -968,18 +968,18 @@
           "quadrant": "Lagging"
         },
         {
-          "date": "2026-07-20",
-          "ratio": 99.145,
-          "momentum": 99.2469,
+          "date": "2026-07-21",
+          "ratio": 99.3179,
+          "momentum": 99.3347,
           "quadrant": "Lagging"
         }
       ],
       "current": {
-        "date": "2026-07-20",
-        "ratio": 99.145,
-        "momentum": 99.2469,
+        "date": "2026-07-21",
+        "ratio": 99.3179,
+        "momentum": 99.3347,
         "quadrant": "Lagging",
-        "heading": "NW",
+        "heading": "N",
         "prev_quadrant": "Lagging"
       }
     },
@@ -1041,16 +1041,16 @@
           "quadrant": "Improving"
         },
         {
-          "date": "2026-07-20",
-          "ratio": 98.6023,
-          "momentum": 101.4932,
+          "date": "2026-07-21",
+          "ratio": 98.6395,
+          "momentum": 101.5283,
           "quadrant": "Improving"
         }
       ],
       "current": {
-        "date": "2026-07-20",
-        "ratio": 98.6023,
-        "momentum": 101.4932,
+        "date": "2026-07-21",
+        "ratio": 98.6395,
+        "momentum": 101.5283,
         "quadrant": "Improving",
         "heading": "N",
         "prev_quadrant": "Improving"
@@ -1114,16 +1114,16 @@
           "quadrant": "Weakening"
         },
         {
-          "date": "2026-07-20",
-          "ratio": 100.611,
-          "momentum": 100.1467,
+          "date": "2026-07-21",
+          "ratio": 100.7736,
+          "momentum": 100.2388,
           "quadrant": "Leading"
         }
       ],
       "current": {
-        "date": "2026-07-20",
-        "ratio": 100.611,
-        "momentum": 100.1467,
+        "date": "2026-07-21",
+        "ratio": 100.7736,
+        "momentum": 100.2388,
         "quadrant": "Leading",
         "heading": "N",
         "prev_quadrant": "Weakening"
@@ -1187,16 +1187,16 @@
           "quadrant": "Improving"
         },
         {
-          "date": "2026-07-20",
-          "ratio": 99.4277,
-          "momentum": 99.653,
+          "date": "2026-07-21",
+          "ratio": 99.1458,
+          "momentum": 99.4664,
           "quadrant": "Lagging"
         }
       ],
       "current": {
-        "date": "2026-07-20",
-        "ratio": 99.4277,
-        "momentum": 99.653,
+        "date": "2026-07-21",
+        "ratio": 99.1458,
+        "momentum": 99.4664,
         "quadrant": "Lagging",
         "heading": "S",
         "prev_quadrant": "Improving"
@@ -1260,18 +1260,18 @@
           "quadrant": "Leading"
         },
         {
-          "date": "2026-07-20",
-          "ratio": 101.4668,
-          "momentum": 101.402,
+          "date": "2026-07-21",
+          "ratio": 100.7635,
+          "momentum": 100.7957,
           "quadrant": "Leading"
         }
       ],
       "current": {
-        "date": "2026-07-20",
-        "ratio": 101.4668,
-        "momentum": 101.402,
+        "date": "2026-07-21",
+        "ratio": 100.7635,
+        "momentum": 100.7957,
         "quadrant": "Leading",
-        "heading": "NE",
+        "heading": "W",
         "prev_quadrant": "Leading"
       }
     }
